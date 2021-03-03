@@ -32,3 +32,11 @@ lerna-debug.log*
 !.vscode/tasks.json
 !.vscode/launch.json
 !.vscode/extensions.json
+
+# docker volumes
+/mysql-data
+/redis-data
+/redis.conf
+/mongo-data
+/mongo-volume
+/.vscode
