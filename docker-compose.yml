@@ -1,0 +1,56 @@
+version: "3.3"
+services:
+  mysql:
+    image: mariadb
+    container_name: project_mysql
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: Project2021!
+      MYSQL_DATABASE: 'project'
+      MYSQL_USER: 'project'
+      MYSQL_PASSWORD: 'Project2021!'
+    volumes:
+      - $PWD/mysql-data:/var/lib/mysql
+    ports:
+      - "3306:3306"
+    networks:
+      - default
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin:5.0.1
+    container_name: processify_phpmyadmin
+    restart: always
+    environment:
+      PMA_HOST: mysql
+    ports:
+      - "8080:80"
+  redis:
+    image: "redis:alpine"
+    container_name: processify_redis
+    command: redis-server --requirepass Processify2020!
+    ports:
+     - "6379:6379"
+    volumes:
+     - $PWD/redis-data:/var/lib/redis
+     - $PWD/redis.conf:/usr/local/etc/redis/redis.conf
+  mongo:
+    image: 'mongo'
+    container_name: project_mongo
+    restart: always
+    ports:
+      - "27017:27017"
+    volumes: 
+      - ./init-mongo.js:/docker-entrypoint-initdb.d/init-mongo-js:ro
+      - mongodb_data_container:/data/db
+  mongo-express:
+    image: mongo-express
+    container_name: project_mongo_express
+    depends_on:
+      - 'mongo'
+    restart: always
+    ports:
+      - 8081:8081
+    environment:
+      - ME_CONFIG_BASICAUTH_USERNAME=project
+      - ME_CONFIG_BASICAUTH_PASSWORD=Project2021!
+volumes:
+  mongodb_data_container:
