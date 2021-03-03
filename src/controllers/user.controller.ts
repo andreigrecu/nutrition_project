@@ -1,10 +1,7 @@
 import { Controller, Post, Body, Get, Put, Delete,Param} from '@nestjs/common';
 import { UserService } from '../services/user.service';
-import { User } from '../entities/user';
 import { ApiBearerAuth, ApiQuery, ApiTags } from "@nestjs/swagger";
 import { CreateUserDto } from '../dtos/createUser.dto';
-import { Repository } from 'typeorm';
-import { InjectRepository } from '@nestjs/typeorm';
 
 @ApiTags('Users')
 @Controller('users')
