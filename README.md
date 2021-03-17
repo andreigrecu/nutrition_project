@@ -75,3 +75,4 @@ Nest is [MIT licensed](LICENSE).
 ## Npm packages to install
 
 npm i class-validator
+npm i bcrypt
