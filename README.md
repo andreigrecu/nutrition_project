@@ -77,3 +77,5 @@ Nest is [MIT licensed](LICENSE).
 npm i class-validator
 
 npm i bcrypt
+
+npm install class-transformer
