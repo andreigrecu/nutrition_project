@@ -4,6 +4,7 @@ import { UserService } from '../services/user.service';
 import { UserController } from '../controllers/user.controller';
 import { User } from '../entities/user';
 import { ResponseFactory } from '../factories/ResponseFactory';
+import { PasswordService } from '../services/password.service';
 
 @Module({
   imports: [
@@ -13,7 +14,8 @@ import { ResponseFactory } from '../factories/ResponseFactory';
     ],
   providers: [
       UserService,
-      ResponseFactory
+      PasswordService,
+      ResponseFactory,
   ],
 
   controllers: [

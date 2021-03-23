@@ -4,6 +4,7 @@ import { ApiBearerAuth, ApiQuery, ApiTags } from "@nestjs/swagger";
 import { CreateUserDto } from '../dtos/createUser.dto';
 import { ResponseFactory } from '../factories/ResponseFactory';
 import { Response } from 'express';
+import { User } from '../entities/user';
 
 @ApiTags('Users')
 @Controller('users')
@@ -14,20 +15,21 @@ export class UserController {
         private readonly responseFactory: ResponseFactory
     ) { }
 
-    @Get()
-    async getOne(
-        @Res() response: Response
-    ): Promise<any> {
-        const all = await this.userService.find();
-        return this.responseFactory.ok(all, response);
-    }
-
-    @Post()
+    @Post('register')
     async create(
         @Body() createUserDto: CreateUserDto,
         @Res() response: Response
     ): Promise<any> {
-        const ceva = await this.userService.createUser(createUserDto);567890
-        return this.responseFactory.ok(ceva, response);
+
+        const checkUserAlreadyRegistered = await this.userService.checkUserAlreadyRegistered(createUserDto.email);
+        if(checkUserAlreadyRegistered === true)
+            return this.responseFactory.forbidden('User already exists', response);
+
+        const user = await this.userService.create(createUserDto);
+
+        if(user)
+           return this.responseFactory.ok(user, response);
+        
+        return this.responseFactory.notFound({ general_: 'users.user_can`t_be_created' }, response);
     }
 }
