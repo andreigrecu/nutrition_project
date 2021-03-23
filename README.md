@@ -79,3 +79,7 @@ npm i class-validator
 npm i bcrypt
 
 npm install class-transformer
+
+npm install --save @nestjs-modules/mailer nodemailer
+
+npm install --save pug
