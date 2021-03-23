@@ -83,3 +83,7 @@ npm install class-transformer
 npm install --save @nestjs-modules/mailer nodemailer
 
 npm install --save pug
+
+npm install --save @nestjs/bull bull
+
+npm install --save-dev @types/bull
