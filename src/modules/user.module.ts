@@ -7,6 +7,7 @@ import { ResponseFactory } from '../factories/ResponseFactory';
 import { PasswordService } from '../services/password.service';
 import { BullModule } from '@nestjs/bull';
 import { EmailQueueProducer } from '../producers/emailQueueProducer';
+import { QueryParamsFilterFactory } from '../factories/queryParamsFilterFactory';
 
 @Module({
   imports: [
@@ -31,6 +32,7 @@ import { EmailQueueProducer } from '../producers/emailQueueProducer';
       PasswordService,
       ResponseFactory,
       EmailQueueProducer,
+      QueryParamsFilterFactory
   ],
 
   controllers: [
