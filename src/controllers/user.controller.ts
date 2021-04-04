@@ -9,6 +9,8 @@ import { PaginationDto } from '../dtos/pagination.dto';
 import { SortDto } from '../dtos/sort.dto';
 import { UserQueryParams } from '../queryparams/userQueryParams';
 import { QueryParamsFilterFactory } from '../factories/queryParamsFilterFactory';
+import { AuthDto } from '../dtos/auth.dto';
+import { PasswordService } from '../services/password.service';
 
 @ApiTags('Users')
 @Controller('users')
@@ -19,6 +21,7 @@ export class UserController {
         private readonly responseFactory: ResponseFactory,
         private readonly queryParamsFilterFactory: QueryParamsFilterFactory,
         private emailQueueProducer: EmailQueueProducer,
+        private passwordService: PasswordService
     ) { }
 
     @Get()
@@ -34,7 +37,6 @@ export class UserController {
         @Res() response: Response
     ): Promise<any> {
 
-        console.log(paginationDto)
         if(!paginationDto.pagination || paginationDto.pagination === "false") {
             let users =  await this.userService.getAll(
                 await this.queryParamsFilterFactory.filter(userQueryParams), sortDto.sort_order, sortDto.sort_direction
@@ -52,6 +54,7 @@ export class UserController {
         ), response);
     }
 
+
     @Post('register')
     async create(
         @Body() createUserDto: CreateUserDto,
@@ -64,7 +67,7 @@ export class UserController {
         else {
                 this.emailQueueProducer.add({
                     time: new Date(),
-                    to: 'netec84017@gameqo.com',
+                    to: 'viyac28906@yncyjs.com',
                     from: 'proiectlicenta2021@gmail.com',
                     subject: 'Let`s test email service',
                     template: 'mainTemplate.html'
@@ -78,4 +81,27 @@ export class UserController {
         
         return this.responseFactory.error({ general_: 'users.user_can`t_be_created' }, response);
     }
+
+    @Post('login')
+    async login(
+        @Res() response: Response,
+        @Body() authDto: AuthDto
+    ): Promise<any> {
+
+        const user = await this.userService.getByEmail(authDto.email);
+
+        if(!user)
+            return this.responseFactory.notFound({ _general: 'auth.user_not_found' }, response);
+
+        const isValid = await this.passwordService.comparePassword(authDto.password, user.password);
+
+        if(!isValid)
+            return this.responseFactory.notFound({ _general: 'auth.user_not_found' }, response);
+
+        //use it to auth on swagger, later
+        const token = await this.passwordService.createToken(authDto.email, user.id);
+
+        return new ResponseFactory().ok({ "user": user, "token": token }, response);
+    }
+    
 }
