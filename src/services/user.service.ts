@@ -95,5 +95,16 @@ export class UserService {
             data: users
         }
     }
+
+    async getByEmail(
+        email: String
+    ): Promise<User> {
+
+        return await this.userRepository.findOne({
+            where: {
+                email: email
+            }
+        });
+    }
     
 }

@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
+import * as jwt from 'jsonwebtoken';
 
 @Injectable()
 export class PasswordService {
@@ -12,9 +13,19 @@ export class PasswordService {
     }
 
     comparePassword(
-        password: string,
-        hash: string
+        password: String,
+        hash: String
     ): Promise<boolean> {
         return bcrypt.compare(password, hash);
     }
+
+    async createToken(email: string, id: string) {
+        const  token = jwt.sign({ email, id }, "JWT_SECRET", { expiresIn: 5000 });
+        return {
+            expires_in: 5000,
+            accse_token: token
+        }
+    }
+
+
 }
