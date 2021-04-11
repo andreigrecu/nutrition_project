@@ -1,14 +1,13 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsEmail, IsString } from 'class-validator';
 
-export class CreateUserDto {
+export class UpdateUserDto {
 
     @ApiProperty({
       type: String,
       description: "User`s first name",
       default:''
     })
-    @IsString()
     firstName: string;
   
     @ApiProperty({
@@ -16,7 +15,6 @@ export class CreateUserDto {
       description: "User`s last name",
       default:''
     })
-    @IsString()
     lastName: string;
   
     @ApiProperty({
@@ -24,21 +22,12 @@ export class CreateUserDto {
       description: "User`s email",
       default:''
     })
-    @IsEmail()
     email: string;
     
     @ApiProperty({
-      type: String,
-      description: "User`s password",
-      default:''
-    })
-    @IsString()
-    password: string;
-
-    @ApiProperty({
       type: Boolean,
       description: "Check if this user`s first login",
-      default: true
+      default: false
     })
     firstLogin: boolean;
 }

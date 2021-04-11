@@ -1,5 +1,5 @@
-import { IsDate, IsEmail, IsString, minLength } from 'class-validator';
-import { Entity, Column, PrimaryGeneratedColumn } from 'typeorm';
+import { IsEmail, IsString } from 'class-validator';
+import { Entity, Column } from 'typeorm';
 import { CoreEntity } from './coreEntity';
 
 @Entity()
@@ -21,7 +21,6 @@ export class User extends CoreEntity {
     @IsString()
     password: string;
 
-    @Column({ nullable: true })
-    @IsDate()
-    birthday: Date;
+    @Column({ default: true })
+    firstLogin: boolean;
 }

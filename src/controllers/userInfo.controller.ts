@@ -1,0 +1,68 @@
+import { Controller, Post, Body, Get, Res, Query, Put} from '@nestjs/common';
+import { ApiTags, ApiQuery } from "@nestjs/swagger";
+import { UserInfoService } from '../services/userInfo.service';
+import { CreateUserInfoDto } from '../dtos/createUserInfo.dto';
+import { ResponseFactory } from '../factories/ResponseFactory';
+import { Response } from 'express';
+import { UserService } from '../services/user.service';
+import { UpdateUserInfoDto } from '../dtos/updateUserInfo.dto';
+
+@ApiTags('UsersInfo')
+@Controller('usersInfo')
+export class UserInfoController {
+
+    constructor(
+        private userInfoService: UserInfoService,
+        private readonly userService: UserService,
+        private readonly responseFactory: ResponseFactory
+    ) { }
+
+    @Post()
+    async create(
+        @Body() createUserInfoDto: CreateUserInfoDto,
+        @Res() response: Response
+    ): Promise<any> {
+
+        const user = await this.userService.findOne(createUserInfoDto.userId);
+        if(!user)
+            return this.responseFactory.notFound({ general_: 'users.user_not_found' }, response);
+
+        let userInfo = await this.userInfoService.findOne(createUserInfoDto.userId);
+        if(userInfo)
+            return this.responseFactory.error({ general_: 'usersInfo.userInfo_already_exists' }, response);
+
+        userInfo = await this.userInfoService.create(createUserInfoDto);
+        
+        if(userInfo)
+            return this.responseFactory.ok(userInfo, response);
+        
+        return this.responseFactory.error({ general_: 'usersInfo.userInfo_can`t_be_created' }, response);
+    }
+
+    @Put()
+    async update(
+        @Body() updateUserInfoDto: UpdateUserInfoDto,
+        @Res() response: Response
+    ): Promise<any> {
+        
+        const user = await this.userService.findOne(updateUserInfoDto.userId);
+        if(!user)
+            return this.responseFactory.notFound({ general_: 'users.user_not_found' }, response);
+
+        let userInfo = await this.userInfoService.findOne(updateUserInfoDto.userId);
+        if(!userInfo)
+            return this.responseFactory.notFound({ general_: 'usersInfo.userInfo_not_found' }, response);
+
+        userInfo = await this.userInfoService.update(updateUserInfoDto, userInfo.id);
+        if(userInfo)
+            return this.responseFactory.ok(userInfo, response);
+
+        return this.responseFactory.error({ general_: 'usersInfo.userInfo_not_updated' }, response);
+
+    }
+
+
+
+    
+
+}

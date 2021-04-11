@@ -1,4 +1,4 @@
-import { Controller, Post, Body, Get, Put, Delete, Param, Res, Query} from '@nestjs/common';
+import { Controller, Post, Body, Get, Res, Query, Put, Param} from '@nestjs/common';
 import { UserService } from '../services/user.service';
 import { ApiTags, ApiQuery } from "@nestjs/swagger";
 import { CreateUserDto } from '../dtos/createUser.dto';
@@ -11,6 +11,7 @@ import { UserQueryParams } from '../queryparams/userQueryParams';
 import { QueryParamsFilterFactory } from '../factories/queryParamsFilterFactory';
 import { AuthDto } from '../dtos/auth.dto';
 import { PasswordService } from '../services/password.service';
+import { UpdateUserDto } from '../dtos/updateUser.dto';
 
 @ApiTags('Users')
 @Controller('users')
@@ -88,7 +89,7 @@ export class UserController {
         @Body() authDto: AuthDto
     ): Promise<any> {
 
-        const user = await this.userService.getByEmail(authDto.email);
+        let user = await this.userService.getByEmail(authDto.email);
 
         if(!user)
             return this.responseFactory.notFound({ _general: 'auth.user_not_found' }, response);
@@ -101,7 +102,29 @@ export class UserController {
         //use it to auth on swagger, later
         const token = await this.passwordService.createToken(authDto.email, user.id);
 
+        await this.userService.updateUserFirstLoginField(user);
+        user.firstLogin = false;
+
         return new ResponseFactory().ok({ "user": user, "token": token }, response);
+    }
+
+    @Put(':id')
+    async update(
+        @Param('id') id: string,
+        @Res() response: Response,
+        @Body() updateUserDto: UpdateUserDto
+    ): Promise<any> {
+        
+        let user = await this.userService.findOne(id);
+        if(!user)
+            return this.responseFactory.notFound({ _general: 'users.user_not_found' }, response);
+
+        user = await this.userService.update(updateUserDto, id);
+        if(user)
+            return this.responseFactory.ok(user, response);
+
+        return this.responseFactory.error({ _general: 'users.user_not_updated' }, response);
+
     }
     
 }
