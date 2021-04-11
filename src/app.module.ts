@@ -8,6 +8,7 @@ import { MailerModule } from '@nestjs-modules/mailer';
 import { EmailQueueConsumer } from './consumers/emailQueueConsumer';
 import { EmailQueueProducer } from './producers/emailQueueProducer';
 import { BullModule } from '@nestjs/bull';
+import { UserInfoModule } from './modules/userInfo.module';
 
 @Module({
   imports: [
@@ -25,6 +26,7 @@ import { BullModule } from '@nestjs/bull';
       }
     }),
     UserModule,
+    UserInfoModule,
     CustomerModule,
     MongooseModule.forRoot('mongodb://127.0.0.1:27017/project'),
     MailerModule.forRoot({

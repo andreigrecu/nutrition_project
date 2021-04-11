@@ -5,6 +5,7 @@ import { User } from '../entities/user';
 import { CreateUserDto } from '../dtos/createUser.dto';
 import { PasswordService } from './password.service';
 import { Order } from '../common/order';
+import { UpdateUserDto } from '../dtos/updateUser.dto';
 
 @Injectable()
 export class UserService {
@@ -43,9 +44,8 @@ export class UserService {
         user.lastName = createUserDto.lastName;
         user.email = createUserDto.email;
         user.password = password;
-        user.birthday =  new Date(createUserDto.birthday);
-        user.birthday.setHours(0,0,0,0);
-            
+        user.firstLogin = true;
+        
         return await this.userRepository.save(user);
     }
 
@@ -105,6 +105,34 @@ export class UserService {
                 email: email
             }
         });
+    }
+
+    async update(
+       updateUserDto: UpdateUserDto,
+       id: string
+    ): Promise<any> {
+
+        let updateUser: UpdateUserDto = this.userRepository.create();
+        updateUser.firstLogin = false;
+        if(updateUserDto.firstName)
+            updateUser.firstName = updateUserDto.firstName;
+        if(updateUserDto.lastName)
+            updateUser.lastName = updateUserDto.lastName;
+        if(updateUserDto.email)
+            updateUser.email = updateUserDto.email;
+
+        return this.userRepository.update(id, updateUser);
+
+    }
+
+    async updateUserFirstLoginField(
+        user: User
+    ): Promise<any> {
+        return this.userRepository.update(user.id, {firstLogin: false});
+    }
+
+    async findOne(id: string): Promise<User> {
+        return await this.userRepository.findOne(id);
     }
     
 }
