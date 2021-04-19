@@ -9,6 +9,7 @@ import { EmailQueueConsumer } from './consumers/emailQueueConsumer';
 import { EmailQueueProducer } from './producers/emailQueueProducer';
 import { BullModule } from '@nestjs/bull';
 import { UserInfoModule } from './modules/userInfo.module';
+import { ProgramModule } from './modules/program.module';
 
 @Module({
   imports: [
@@ -28,6 +29,7 @@ import { UserInfoModule } from './modules/userInfo.module';
     UserModule,
     UserInfoModule,
     CustomerModule,
+    ProgramModule,
     MongooseModule.forRoot('mongodb://127.0.0.1:27017/project'),
     MailerModule.forRoot({
       transport: 'smtps://proiectlicenta2021@gmail.com:andrei123456d@smtp.gmail.com',

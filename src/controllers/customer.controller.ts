@@ -30,7 +30,6 @@ export class CustomersController {
             customerDto.meeting_date
         )
 
-        console.log(customer); 
         return customer;
     }
 
@@ -39,7 +38,6 @@ export class CustomersController {
     ): Promise<Customer[]> {
         const customers = await this.customerModel.find();
         
-        console.log(customers);
         return customers;
     }
 

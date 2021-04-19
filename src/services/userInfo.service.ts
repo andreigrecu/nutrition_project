@@ -37,6 +37,11 @@ export class UserInfoService {
         }});
     }
 
+    async getAll(   
+    ): Promise<UserInfo[]> {
+        return await this.userInfoRepository.find();
+    }
+
     async update(
         updateUserInfoDto: UpdateUserInfoDto,
         id: string
@@ -55,9 +60,9 @@ export class UserInfoService {
             updateUserInfo.numberOfDaysGoal = updateUserInfoDto.numberOfDaysGoal;
         if(updateUserInfoDto.gender)
             updateUserInfo.gender = updateUserInfoDto.gender;
-        updateUserInfo.userId = updateUserInfoDto.userId;
+        if(updateUserInfo.userId)
+            updateUserInfo.userId = updateUserInfoDto.userId;
 
-        console.log(updateUserInfoDto)
         return this.userInfoRepository.update(id, updateUserInfo);
     }
 
