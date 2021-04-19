@@ -27,4 +27,20 @@ export class UserInfo extends CoreEntity {
     @Column()
     @IsString()
     gender: string;
+
+    @Column({ nullable: true })
+    @IsString()
+    programId: string;
+
+    @Column({ nullable: true })
+    @IsNumber()
+    proteinPercent: number;
+
+    @Column({ nullable: true })
+    @IsNumber()
+    carbosPercent: number;
+
+    @Column({ nullable: true })
+    @IsNumber()
+    fatsPercent: number;
 }

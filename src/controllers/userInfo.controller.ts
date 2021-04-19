@@ -62,6 +62,19 @@ export class UserInfoController {
     }
 
 
+    @Get()
+    async get(
+        @Res() response: Response
+    ): Promise<any> {
+
+        const usersInfo = await this.userInfoService.getAll();
+
+        if(!usersInfo)
+            return this.responseFactory.notFound({ general_: 'usersInfo.usersInfos_not_found' }, response)
+
+        return this.responseFactory.ok(usersInfo, response);
+    }
+
 
     
 
