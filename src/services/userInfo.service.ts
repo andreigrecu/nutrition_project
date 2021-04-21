@@ -1,8 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { CreateUserInfoDto } from '../dtos/createUserInfo.dto';
-import { Repository } from 'typeorm';
 import { UserInfo } from '../entities/userInfo';
+import { Repository } from 'typeorm';
+import { CreateUserInfoDto } from '../dtos/createUserInfo.dto';
 import { UpdateUserInfoDto } from '../dtos/updateUserInfo.dto';
 
 @Injectable()
@@ -14,17 +14,17 @@ export class UserInfoService {
     ) { }
 
     async create(
-        createUserInfoDro: CreateUserInfoDto
+        createUserInfoDto: CreateUserInfoDto
     ): Promise<UserInfo> {
 
         let userInfo: UserInfo = new UserInfo();
-        userInfo.age = createUserInfoDro.age;
-        userInfo.height = createUserInfoDro.height;
-        userInfo.weight = createUserInfoDro.weight;
-        userInfo.weighGoal = createUserInfoDro.weightGoal;
-        userInfo.numberOfDaysGoal = createUserInfoDro.numberOfDaysGoal;
-        userInfo.userId = createUserInfoDro.userId;
-        userInfo.gender = createUserInfoDro.gender;
+        userInfo.age = createUserInfoDto.age;
+        userInfo.height = createUserInfoDto.height;
+        userInfo.weight = createUserInfoDto.weight;
+        userInfo.weightGoal = createUserInfoDto.weightGoal;
+        userInfo.numberOfDaysGoal = createUserInfoDto.numberOfDaysGoal;
+        userInfo.gender = createUserInfoDto.gender;
+        userInfo.userId = createUserInfoDto.userId;
 
         return await this.userInfoRepository.save(userInfo);
     }
@@ -52,16 +52,14 @@ export class UserInfoService {
             updateUserInfo.age = updateUserInfoDto.age;
         if(updateUserInfoDto.height)
             updateUserInfo.height = updateUserInfoDto.height;
-        if(updateUserInfo.weight)
+        if(updateUserInfoDto.weight) 
             updateUserInfo.weight = updateUserInfoDto.weight;
-        if(updateUserInfo.weighGoal)
-            updateUserInfo.weighGoal = updateUserInfoDto.weightGoal;
-        if(updateUserInfo.numberOfDaysGoal)
+        if(updateUserInfoDto.weightGoal)
+            updateUserInfo.weightGoal = updateUserInfoDto.weightGoal;
+        if(updateUserInfoDto.numberOfDaysGoal)
             updateUserInfo.numberOfDaysGoal = updateUserInfoDto.numberOfDaysGoal;
         if(updateUserInfoDto.gender)
             updateUserInfo.gender = updateUserInfoDto.gender;
-        if(updateUserInfo.userId)
-            updateUserInfo.userId = updateUserInfoDto.userId;
 
         return this.userInfoRepository.update(id, updateUserInfo);
     }
