@@ -1,4 +1,4 @@
-import { IsNumber, IsString } from 'class-validator';
+import { IsEmail, IsString } from 'class-validator';
 import { Entity, Column } from 'typeorm';
 import { CoreEntity } from './coreEntity';
 
@@ -15,32 +15,14 @@ export class UserInfo extends CoreEntity {
     weight: number;
 
     @Column()
-    weighGoal: number;
+    weightGoal: number;
 
     @Column()
     numberOfDaysGoal: number;
 
-    @Column()
-    @IsString()
-    userId: string;
-
-    @Column()
-    @IsString()
+    @Column({nullable: true})
     gender: string;
 
-    @Column({ nullable: true })
-    @IsString()
-    programId: string;
-
-    @Column({ nullable: true })
-    @IsNumber()
-    proteinPercent: number;
-
-    @Column({ nullable: true })
-    @IsNumber()
-    carbosPercent: number;
-
-    @Column({ nullable: true })
-    @IsNumber()
-    fatsPercent: number;
+    @Column({nullable: true})
+    userId: string;
 }

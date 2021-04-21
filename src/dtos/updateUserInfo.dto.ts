@@ -1,54 +1,50 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsNumber } from 'class-validator';
+import { IsNumber, IsString } from 'class-validator';
 
 export class UpdateUserInfoDto {
 
     @ApiProperty({
       type: Number,
-      description: "User`s age",
-      default:''
+      description: "User`s age"
     })
     age: number;
   
     @ApiProperty({
       type: Number,
-      description: "User`s height",
-      default:''
+      description: "User`s height"
     })
     height: number;
-  
-    @ApiProperty({
-      type: Number,
-      description: "User`s weight",
-      default:''
-    })
-    weight: number;
     
     @ApiProperty({
       type: Number,
-      description: "User`s weight goal",
-      default:''
+      description: "User`s weight"
+    })
+    weight: number;
+
+    @ApiProperty({
+      type: Number,
+      description: "User`s weight goal"
     })
     weightGoal: number;
 
     @ApiProperty({
       type: Number,
-      description: "User`s number of days goal",
-      default:''
+      description: 'User`s number of days goal'
     })
     numberOfDaysGoal: number;
 
     @ApiProperty({
-      type: String,
-      description: "User`s id from user table",
-      default:''
-    })
-    userId: string;
-
-    @ApiProperty({
-      type: String,
-      description: "User`s gender",
-      default:''
+        type: String,
+        description: 'User`s gender',
+        default: ''
     })
     gender: string;
+
+    @ApiProperty({
+        type: String,
+        description: 'User`s id',
+        default: ''
+    })
+    @IsString()
+    userId: string;
 }

@@ -1,10 +1,10 @@
 import { Controller, Post, Body, Get, Res, Query, Put} from '@nestjs/common';
 import { ApiTags, ApiQuery } from "@nestjs/swagger";
 import { UserInfoService } from '../services/userInfo.service';
-import { CreateUserInfoDto } from '../dtos/createUserInfo.dto';
 import { ResponseFactory } from '../factories/ResponseFactory';
 import { Response } from 'express';
 import { UserService } from '../services/user.service';
+import { CreateUserInfoDto } from '../dtos/createUserInfo.dto';
 import { UpdateUserInfoDto } from '../dtos/updateUserInfo.dto';
 
 @ApiTags('UsersInfo')
@@ -44,23 +44,21 @@ export class UserInfoController {
         @Body() updateUserInfoDto: UpdateUserInfoDto,
         @Res() response: Response
     ): Promise<any> {
-        
+
         const user = await this.userService.findOne(updateUserInfoDto.userId);
         if(!user)
             return this.responseFactory.notFound({ general_: 'users.user_not_found' }, response);
 
         let userInfo = await this.userInfoService.findOne(updateUserInfoDto.userId);
         if(!userInfo)
-            return this.responseFactory.notFound({ general_: 'usersInfo.userInfo_not_found' }, response);
+            return this.responseFactory.notFound({ general_: 'usersInfo.userInfo_not_found' }, response);        
 
         userInfo = await this.userInfoService.update(updateUserInfoDto, userInfo.id);
         if(userInfo)
             return this.responseFactory.ok(userInfo, response);
 
         return this.responseFactory.error({ general_: 'usersInfo.userInfo_not_updated' }, response);
-
     }
-
 
     @Get()
     async get(
@@ -75,7 +73,5 @@ export class UserInfoController {
         return this.responseFactory.ok(usersInfo, response);
     }
 
-
-    
 
 }
