@@ -25,4 +25,16 @@ export class UserInfo extends CoreEntity {
 
     @Column({nullable: true})
     userId: string;
+
+    @Column({nullable: true})
+    programId: string;
+
+    @Column({default: -1})
+    carbohydratesPercent: number;
+
+    @Column({default: -1})
+    fatsPercent: number;
+
+    @Column({default: -1})
+    proteinsPercent: number;
 }

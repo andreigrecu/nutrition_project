@@ -25,18 +25,18 @@ export class UserInfoController {
 
         const user = await this.userService.findOne(createUserInfoDto.userId);
         if(!user)
-            return this.responseFactory.notFound({ general_: 'users.user_not_found' }, response);
+            return this.responseFactory.notFound({ _general: 'users.user_not_found' }, response);
 
         let userInfo = await this.userInfoService.findOne(createUserInfoDto.userId);
         if(userInfo)
-            return this.responseFactory.error({ general_: 'usersInfo.userInfo_already_exists' }, response);
+            return this.responseFactory.error({ _general: 'usersInfo.userInfo_already_exists' }, response);
 
         userInfo = await this.userInfoService.create(createUserInfoDto);
         
         if(userInfo)
             return this.responseFactory.ok(userInfo, response);
         
-        return this.responseFactory.error({ general_: 'usersInfo.userInfo_can`t_be_created' }, response);
+        return this.responseFactory.error({ _general: 'usersInfo.userInfo_can`t_be_created' }, response);
     }
 
     @Put()
@@ -47,17 +47,17 @@ export class UserInfoController {
 
         const user = await this.userService.findOne(updateUserInfoDto.userId);
         if(!user)
-            return this.responseFactory.notFound({ general_: 'users.user_not_found' }, response);
+            return this.responseFactory.notFound({ _general: 'users.user_not_found' }, response);
 
         let userInfo = await this.userInfoService.findOne(updateUserInfoDto.userId);
         if(!userInfo)
-            return this.responseFactory.notFound({ general_: 'usersInfo.userInfo_not_found' }, response);        
+            return this.responseFactory.notFound({ _general: 'usersInfo.userInfo_not_found' }, response);        
 
         userInfo = await this.userInfoService.update(updateUserInfoDto, userInfo.id);
         if(userInfo)
             return this.responseFactory.ok(userInfo, response);
 
-        return this.responseFactory.error({ general_: 'usersInfo.userInfo_not_updated' }, response);
+        return this.responseFactory.error({ _general: 'usersInfo.userInfo_not_updated' }, response);
     }
 
     @Get()
@@ -68,10 +68,8 @@ export class UserInfoController {
         const usersInfo = await this.userInfoService.getAll();
 
         if(!usersInfo)
-            return this.responseFactory.notFound({ general_: 'usersInfo.usersInfos_not_found' }, response)
+            return this.responseFactory.notFound({ _general: 'usersInfo.usersInfos_not_found' }, response)
 
         return this.responseFactory.ok(usersInfo, response);
     }
-
-
 }
