@@ -60,9 +60,16 @@ export class UserInfoService {
             updateUserInfo.numberOfDaysGoal = updateUserInfoDto.numberOfDaysGoal;
         if(updateUserInfoDto.gender)
             updateUserInfo.gender = updateUserInfoDto.gender;
+        if(updateUserInfoDto.programId)
+            updateUserInfo.programId = updateUserInfoDto.programId;
+        if(updateUserInfoDto.carbohydratesPercent)
+            updateUserInfo.carbohydratesPercent = updateUserInfoDto.carbohydratesPercent;
+        if(updateUserInfoDto.fatsPercent)
+            updateUserInfo.fatsPercent = updateUserInfoDto.fatsPercent;
+        if(updateUserInfoDto.proteinsPercent)
+            updateUserInfo.proteinsPercent = updateUserInfoDto.proteinsPercent;
 
         return this.userInfoRepository.update(id, updateUserInfo);
     }
-
     
 }

@@ -12,6 +12,8 @@ import { QueryParamsFilterFactory } from '../factories/queryParamsFilterFactory'
 import { AuthDto } from '../dtos/auth.dto';
 import { PasswordService } from '../services/password.service';
 import { UpdateUserDto } from '../dtos/updateUser.dto';
+import { UserInfo } from '../entities/userInfo';
+import { UserInfoService } from '../services/userInfo.service';
 
 @ApiTags('Users')
 @Controller('users')
@@ -22,7 +24,8 @@ export class UserController {
         private readonly responseFactory: ResponseFactory,
         private readonly queryParamsFilterFactory: QueryParamsFilterFactory,
         private emailQueueProducer: EmailQueueProducer,
-        private passwordService: PasswordService
+        private passwordService: PasswordService,
+        private userInfoService: UserInfoService
     ) { }
 
     @Get()
@@ -80,7 +83,7 @@ export class UserController {
         if(user)
            return this.responseFactory.ok(user, response);
         
-        return this.responseFactory.error({ general_: 'users.user_can`t_be_created' }, response);
+        return this.responseFactory.error({ _general: 'users.user_can`t_be_created' }, response);
     }
 
     @Post('login')
@@ -127,4 +130,17 @@ export class UserController {
 
     }
     
+    @Get(':id/userInfo')
+    async getUserInfo(
+        @Param('id') id: string,
+        @Res() response: Response
+    ): Promise<any> {
+        
+        const userInfo: UserInfo = await this.userService.getUserInfo(id);
+        if(!userInfo)
+            return this.responseFactory.notFound({ _general: 'users.userInfo_not_found'}, response);
+        
+        return this.responseFactory.ok(userInfo, response);
+    }
+
 }

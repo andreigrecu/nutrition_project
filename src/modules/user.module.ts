@@ -8,6 +8,8 @@ import { PasswordService } from '../services/password.service';
 import { BullModule } from '@nestjs/bull';
 import { EmailQueueProducer } from '../producers/emailQueueProducer';
 import { QueryParamsFilterFactory } from '../factories/queryParamsFilterFactory';
+import { UserInfo } from '../entities/userInfo';
+import { UserInfoService } from '../services/userInfo.service';
 
 @Module({
   imports: [
@@ -24,11 +26,13 @@ import { QueryParamsFilterFactory } from '../factories/queryParamsFilterFactory'
       }
     }),
       TypeOrmModule.forFeature([
-          User
+          User,
+          UserInfo
       ])
     ],
   providers: [
       UserService,
+      UserInfoService,
       PasswordService,
       ResponseFactory,
       EmailQueueProducer,

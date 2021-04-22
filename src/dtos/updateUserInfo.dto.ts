@@ -47,4 +47,29 @@ export class UpdateUserInfoDto {
     })
     @IsString()
     userId: string;
+
+    @ApiProperty({
+      type: String,
+      description: 'User`s program id',
+      default: ''
+    })
+    programId: string;
+
+    @ApiProperty({
+      type: Number,
+      description: 'User`s carbos percent',
+    })
+    carbohydratesPercent: number;
+
+    @ApiProperty({
+      type: Number,
+      description: 'User`s fats percent',
+    })
+    fatsPercent: number;
+
+    @ApiProperty({
+      type: Number,
+      description: 'User`s proteins percent',
+    })
+    proteinsPercent: number;
 }

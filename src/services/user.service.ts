@@ -6,6 +6,7 @@ import { CreateUserDto } from '../dtos/createUser.dto';
 import { PasswordService } from './password.service';
 import { Order } from '../common/order';
 import { UpdateUserDto } from '../dtos/updateUser.dto';
+import { UserInfo } from '../entities/userInfo';
 
 @Injectable()
 export class UserService {
@@ -13,6 +14,8 @@ export class UserService {
     constructor(
         @InjectRepository(User) 
         private userRepository: Repository<User>,
+        @InjectRepository(UserInfo) 
+        private userInfoRepository: Repository<UserInfo>,
         private readonly passwordService: PasswordService
     ) { }
 
@@ -131,8 +134,19 @@ export class UserService {
         return this.userRepository.update(user.id, {firstLogin: false});
     }
 
-    async findOne(id: string): Promise<User> {
+    async findOne(
+        id: string
+    ): Promise<User> {
         return await this.userRepository.findOne(id);
+    }
+
+    async getUserInfo(
+        id: string
+    ): Promise<UserInfo> {
+        return await this.userInfoRepository.findOne({
+            where:{
+                userId: id
+        }})
     }
     
 }
