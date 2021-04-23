@@ -91,3 +91,7 @@ npm install --save-dev @types/bull
 npm install bullmq
 
 npm i jsonwebtoken
+
+npm install --save @nestjs/schedule
+
+npm install --save-dev @types/cron
