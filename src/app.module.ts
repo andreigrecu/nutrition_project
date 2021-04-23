@@ -10,6 +10,7 @@ import { EmailQueueProducer } from './producers/emailQueueProducer';
 import { BullModule } from '@nestjs/bull';
 import { UserInfoModule } from './modules/userInfo.module';
 import { ProgramModule } from './modules/program.module';
+import { ScheduleModule } from '@nestjs/schedule';
 
 @Module({
   imports: [
@@ -44,7 +45,8 @@ import { ProgramModule } from './modules/program.module';
         },
       },
     },
-    )
+    ),
+    ScheduleModule.forRoot()
   ],
   providers: [
     EmailQueueConsumer, 

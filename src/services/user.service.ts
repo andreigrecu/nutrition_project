@@ -7,6 +7,7 @@ import { PasswordService } from './password.service';
 import { Order } from '../common/order';
 import { UpdateUserDto } from '../dtos/updateUser.dto';
 import { UserInfo } from '../entities/userInfo';
+import { Cron } from '@nestjs/schedule';
 
 @Injectable()
 export class UserService {
@@ -16,7 +17,7 @@ export class UserService {
         private userRepository: Repository<User>,
         @InjectRepository(UserInfo) 
         private userInfoRepository: Repository<UserInfo>,
-        private readonly passwordService: PasswordService
+        private readonly passwordService: PasswordService,
     ) { }
 
 
@@ -148,5 +149,10 @@ export class UserService {
                 userId: id
         }})
     }
+
+    // @Cron('45 * * * * *')
+    // handleCron() {
+    //     console.log('Called when the current second is 45');
+    // }
     
 }
