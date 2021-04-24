@@ -7,7 +7,6 @@ import { PasswordService } from './password.service';
 import { Order } from '../common/order';
 import { UpdateUserDto } from '../dtos/updateUser.dto';
 import { UserInfo } from '../entities/userInfo';
-import { Cron } from '@nestjs/schedule';
 
 @Injectable()
 export class UserService {
@@ -67,6 +66,11 @@ export class UserService {
             where: filter
         })
         return users;
+    }
+
+    async getAllUnfiltered(
+    ): Promise<User[]> {
+        return await this.userRepository.find();
     }
 
     async getPaginated(
@@ -149,10 +153,5 @@ export class UserService {
                 userId: id
         }})
     }
-
-    // @Cron('45 * * * * *')
-    // handleCron() {
-    //     console.log('Called when the current second is 45');
-    // }
     
 }

@@ -10,9 +10,17 @@ import { EmailQueueProducer } from '../producers/emailQueueProducer';
 import { QueryParamsFilterFactory } from '../factories/queryParamsFilterFactory';
 import { UserInfo } from '../entities/userInfo';
 import { UserInfoService } from '../services/userInfo.service';
+import { FoodService } from '../services/food.service';
+import { MongooseModule } from '@nestjs/mongoose';
+import { FoodSchema } from '../models/food.model';
 
 @Module({
   imports: [
+    MongooseModule.forFeature(
+      [
+        { name: 'Food', schema: FoodSchema },
+      ]
+    ),    
     BullModule.registerQueue({
       name: 'email',
       redis: {
@@ -36,7 +44,8 @@ import { UserInfoService } from '../services/userInfo.service';
       PasswordService,
       ResponseFactory,
       EmailQueueProducer,
-      QueryParamsFilterFactory
+      QueryParamsFilterFactory,
+      FoodService
   ],
 
   controllers: [

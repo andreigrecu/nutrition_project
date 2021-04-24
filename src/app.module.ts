@@ -11,6 +11,7 @@ import { BullModule } from '@nestjs/bull';
 import { UserInfoModule } from './modules/userInfo.module';
 import { ProgramModule } from './modules/program.module';
 import { ScheduleModule } from '@nestjs/schedule';
+import { FoodModule } from './modules/food.module';
 
 @Module({
   imports: [
@@ -30,6 +31,7 @@ import { ScheduleModule } from '@nestjs/schedule';
     UserModule,
     UserInfoModule,
     CustomerModule,
+    FoodModule,
     ProgramModule,
     MongooseModule.forRoot('mongodb://127.0.0.1:27017/project'),
     MailerModule.forRoot({
