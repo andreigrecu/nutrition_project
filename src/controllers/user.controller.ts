@@ -14,6 +14,11 @@ import { PasswordService } from '../services/password.service';
 import { UpdateUserDto } from '../dtos/updateUser.dto';
 import { UserInfo } from '../entities/userInfo';
 import { UserInfoService } from '../services/userInfo.service';
+import { UpdateUserFoodDto } from '../dtos/updateUserFood.dto';
+import { InjectModel } from '@nestjs/mongoose';
+import { Model } from 'mongoose';
+import { Food } from '../models/food.model';
+import { FoodService } from '../services/food.service';
 
 @ApiTags('Users')
 @Controller('users')
@@ -25,7 +30,10 @@ export class UserController {
         private readonly queryParamsFilterFactory: QueryParamsFilterFactory,
         private emailQueueProducer: EmailQueueProducer,
         private passwordService: PasswordService,
-        private userInfoService: UserInfoService
+        private userInfoService: UserInfoService,
+        @InjectModel('Food')
+        private readonly foodModel: Model<Food>,
+        private readonly foodService: FoodService,
     ) { }
 
     @Get()
@@ -141,6 +149,36 @@ export class UserController {
             return this.responseFactory.notFound({ _general: 'users.userInfo_not_found'}, response);
         
         return this.responseFactory.ok(userInfo, response);
+    }
+
+    @Put(':id/addFoodItem')
+    async addFoodItem(
+        @Param('id') id: string,
+        @Res() response: Response,
+        @Body() updateUserFood: UpdateUserFoodDto
+    ): Promise<any> {
+
+        let userMenus = await this.foodModel.find({ userId: id });
+        if(!userMenus)
+            return this.responseFactory.notFound({ _general: 'users.userMenus_not_found'}, response);
+
+        for(let i = 0; i < userMenus.length; i++) {
+            if(Math.abs(userMenus[i]['createdAt'].getTime() - new Date().getTime()) > 86400000)
+                userMenus.splice(i);
+        }
+
+        if(updateUserFood.breakfastItem)
+            userMenus[0]['breakfast'].push(updateUserFood.breakfastItem);
+        if(updateUserFood.lunchItem)
+            userMenus[0]['lunch'].push(updateUserFood.lunchItem);
+        if(updateUserFood.dinnerItem)
+            userMenus[0]['dinner'].push(updateUserFood.dinnerItem);
+        if(updateUserFood.snackItem)
+            userMenus[0]['snacks'].push(updateUserFood.snackItem);
+
+        const ceva = await userMenus[0].save();        
+
+        return this.responseFactory.ok(ceva, response);
     }
 
 }

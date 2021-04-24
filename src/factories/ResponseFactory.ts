@@ -11,7 +11,7 @@ export class ResponseFactory {
         this.serverTime = now_utc;
     }
 
-    ok(data: any, response: any) {
+    ok(data: any, response: any): any {
         this.statusCode = 200;
         let responseObject = {
             "data": data,
@@ -39,7 +39,7 @@ export class ResponseFactory {
         response.status(HttpStatus.NOT_FOUND).json(responseObject);
     }
 
-    error(errors: any = {}, response: any) {
+    error(errors: any = {}, response: any): any {
         this.statusCode = 500;
         let responseObject = {
             "meta": {

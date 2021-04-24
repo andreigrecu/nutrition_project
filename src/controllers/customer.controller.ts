@@ -1,4 +1,4 @@
-import { Controller, Post, Body, Get, Put, Delete,Param, UseGuards, UseFilters, Res} from '@nestjs/common';
+import { Controller, Post, Body, Get } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Customer } from '../models/customer.model';
