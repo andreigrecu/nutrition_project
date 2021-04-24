@@ -79,10 +79,10 @@ export class UserController {
         else {
                 this.emailQueueProducer.add({
                     time: new Date(),
-                    to: 'viyac28906@yncyjs.com',
+                    to: createUserDto.email,
                     from: 'proiectlicenta2021@gmail.com',
-                    subject: 'Let`s test email service',
-                    template: 'mainTemplate.html'
+                    subject: 'Welcome',
+                    template: 'welcome.html'
                 });
         }
 
