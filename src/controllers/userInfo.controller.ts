@@ -1,5 +1,5 @@
 import { Controller, Post, Body, Get, Res, Query, Put} from '@nestjs/common';
-import { ApiTags, ApiQuery } from "@nestjs/swagger";
+import { ApiTags } from "@nestjs/swagger";
 import { UserInfoService } from '../services/userInfo.service';
 import { ResponseFactory } from '../factories/ResponseFactory';
 import { Response } from 'express';

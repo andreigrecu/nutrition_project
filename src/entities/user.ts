@@ -5,22 +5,43 @@ import { CoreEntity } from './coreEntity';
 @Entity()
 export class User extends CoreEntity {
 
-    @Column({ length: 25 })
+    @Column({ 
+        length: 25
+    })
     @IsString()
     firstName: string;
 
-    @Column({ length: 35})
+    @Column({ 
+        length: 35
+    })
     @IsString()
     lastName: string;
 
-    @Column({ unique: true, length: 255 })
+    @Column({ 
+        unique: true, 
+        length: 255 
+    })
     @IsEmail()
     email: string;
 
-    @Column({ length: 255 })
+    @Column({
+        length: 255 
+    })
     @IsString()
     password: string;
 
-    @Column({ default: true })
+    @Column({ 
+        default: true
+    })
     firstLogin: boolean;
+
+    @Column({
+        default: null
+    })
+    token: string;
+
+    @Column({
+        default: null
+    })
+    valid_token: Date;
 }

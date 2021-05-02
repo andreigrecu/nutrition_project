@@ -19,6 +19,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Food } from '../models/food.model';
 import { FoodService } from '../services/food.service';
+import { ChangePasswordDto } from '../dtos/changePassword.dto';
 
 @ApiTags('Users')
 @Controller('users')
@@ -30,10 +31,8 @@ export class UserController {
         private readonly queryParamsFilterFactory: QueryParamsFilterFactory,
         private emailQueueProducer: EmailQueueProducer,
         private passwordService: PasswordService,
-        private userInfoService: UserInfoService,
         @InjectModel('Food')
         private readonly foodModel: Model<Food>,
-        private readonly foodService: FoodService,
     ) { }
 
     @Get()
@@ -179,6 +178,39 @@ export class UserController {
         const ceva = await userMenus[0].save();        
 
         return this.responseFactory.ok(ceva, response);
+    }
+
+    @Post(':id/change-password')
+    async changePassword(
+        @Param('id') id: string,
+        @Body() changePasswordDto: ChangePasswordDto,
+        @Res() response: Response
+    ) {
+        let user = await this.userService.findOne(id);
+        if(!user)
+            return this.responseFactory.notFound({ _general: 'users.user_not_found' }, response);
+        
+        const isValid = await this.passwordService.comparePassword(changePasswordDto.current_password, user.password);
+        if(!isValid)
+            return this.responseFactory.notFound({ _general: 'users.old_password_is_wrong' }, response);
+
+        console.log(changePasswordDto.new_password)
+        console.log(changePasswordDto.new_password.length)
+        if(changePasswordDto.new_password.length < 6)
+            return this.responseFactory.error({ _general: 'users.new_password_too_short' }, response);
+
+        if(changePasswordDto.new_password !== changePasswordDto.confirm_password)
+            return this.responseFactory.error({ _general: 'users.passwords don`t match'}, response);
+
+        const password = await this.passwordService.generatePassword(changePasswordDto.new_password);
+        user.password = password;
+
+        user = await this.userService.updatePassword(user);
+        if(!user)
+            return this.responseFactory.error({ _general: 'users.password_didn`t change' }, response);
+
+        return this.responseFactory.ok({ _general: 'users.password_changed' }, response);
+
     }
 
 }
