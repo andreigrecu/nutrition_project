@@ -12,6 +12,7 @@ import { UserInfoModule } from './modules/userInfo.module';
 import { ProgramModule } from './modules/program.module';
 import { ScheduleModule } from '@nestjs/schedule';
 import { FoodModule } from './modules/food.module';
+import { ForgotPasswordModule } from './modules/forgotPassword.module';
 
 @Module({
   imports: [
@@ -33,6 +34,7 @@ import { FoodModule } from './modules/food.module';
     CustomerModule,
     FoodModule,
     ProgramModule,
+    ForgotPasswordModule,
     MongooseModule.forRoot('mongodb://127.0.0.1:27017/project'),
     MailerModule.forRoot({
       transport: 'smtps://proiectlicenta2021@gmail.com:andrei123456d@smtp.gmail.com',

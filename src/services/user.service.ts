@@ -133,6 +133,12 @@ export class UserService {
 
     }
 
+    async updatePassword(
+        user: User
+    ): Promise<any> {
+        return this.userRepository.save(user);
+    }
+
     async updateUserFirstLoginField(
         user: User
     ): Promise<any> {
