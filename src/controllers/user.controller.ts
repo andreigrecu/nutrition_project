@@ -31,6 +31,7 @@ export class UserController {
         private readonly queryParamsFilterFactory: QueryParamsFilterFactory,
         private emailQueueProducer: EmailQueueProducer,
         private passwordService: PasswordService,
+        private readonly foodService: FoodService,
         @InjectModel('Food')
         private readonly foodModel: Model<Food>,
     ) { }
@@ -86,11 +87,24 @@ export class UserController {
         }
 
         const user = await this.userService.create(createUserDto);
+        if(!user)
+            return this.responseFactory.error({ _general: 'users.user_can`t_be_created' }, response);
 
-        if(user)
-           return this.responseFactory.ok(user, response);
+        const userDailyPlan = await this.foodService.create(
+            new Date(),
+            new Date(),
+            user.id,
+            [],
+            [],
+            [],
+            []
+        )
+
+        if(!userDailyPlan)
+            return this.responseFactory.error({ _general: 'users.user_daily_plan_not_created' }, response);
         
-        return this.responseFactory.error({ _general: 'users.user_can`t_be_created' }, response);
+        return this.responseFactory.ok(user, response);
+   
     }
 
     @Post('login')
@@ -157,16 +171,21 @@ export class UserController {
         @Body() updateUserFood: UpdateUserFoodDto
     ): Promise<any> {
 
-        let userMenus = await this.foodModel.find({ userId: id });
+        const user = await this.userService.findOne(id);
+        if(!user)
+            return this.responseFactory.notFound({ _general: 'users.user_not_found' }, response);
+
+        const today = new Date();
+        today.setUTCHours(0,0,0,0);
+
+        let userMenus = await this.foodModel.find({ 
+            userId: id,
+            createdAt: { $gt: today } 
+        });
         if(!userMenus)
             return this.responseFactory.notFound({ _general: 'users.userMenus_not_found'}, response);
 
-        for(let i = 0; i < userMenus.length; i++) {
-            if(Math.abs(userMenus[i]['createdAt'].getTime() - new Date().getTime()) > 86400000)
-                userMenus.splice(i);
-        }
-
-        if(updateUserFood.breakfastItem)
+        if(updateUserFood.breakfastItem && userMenus.length >= 1)
             userMenus[0]['breakfast'].push(updateUserFood.breakfastItem);
         if(updateUserFood.lunchItem)
             userMenus[0]['lunch'].push(updateUserFood.lunchItem);
@@ -175,9 +194,9 @@ export class UserController {
         if(updateUserFood.snackItem)
             userMenus[0]['snacks'].push(updateUserFood.snackItem);
 
-        const ceva = await userMenus[0].save();        
+        const newFood = await userMenus[0].save();        
 
-        return this.responseFactory.ok(ceva, response);
+        return this.responseFactory.ok(newFood, response);
     }
 
     @Post(':id/change-password')
@@ -194,8 +213,6 @@ export class UserController {
         if(!isValid)
             return this.responseFactory.notFound({ _general: 'users.old_password_is_wrong' }, response);
 
-        console.log(changePasswordDto.new_password)
-        console.log(changePasswordDto.new_password.length)
         if(changePasswordDto.new_password.length < 6)
             return this.responseFactory.error({ _general: 'users.new_password_too_short' }, response);
 
@@ -211,6 +228,263 @@ export class UserController {
 
         return this.responseFactory.ok({ _general: 'users.password_changed' }, response);
 
+    }
+
+    @Get(':id/allMeals')
+    async getAllUserMeals(
+        @Param('id') id: string,
+        @Res() response: Response
+    ): Promise<any> {
+        
+        let user = await this.userService.findOne(id);
+        if(!user)
+            return this.responseFactory.notFound({ _general: 'users.user_not_found' }, response);
+
+        const userMeals = await this.foodModel.find({
+            userId : id         
+        });
+
+        if(!userMeals)
+            return this.responseFactory.error({ _general: 'users.user_meals_not_found'}, response);
+
+        return this.responseFactory.ok(userMeals, response);
+    }
+
+    @Get(':id/todayMeals')
+    async getUserTodayMeals(
+        @Param('id') id: string,
+        @Res() response: Response
+    ): Promise<any> {
+        
+        let user = await this.userService.findOne(id);
+        if(!user)
+            return this.responseFactory.notFound({ _general: 'users.user_not_found' }, response);
+
+        const today = new Date();
+        today.setUTCHours(0,0,0,0);
+
+        const todayUserMeals = await this.foodModel.find({ 
+            userId: id,
+            createdAt: { $gt: today } 
+        });
+
+        if(!todayUserMeals)
+            return this.responseFactory.error({ _general: 'users.user_today_meals_not_found'}, response);
+
+        return this.responseFactory.ok(todayUserMeals, response);
+    }
+
+    @Get(':id/todayNutrients')
+    async getUserTodayNutrients(
+        @Param('id') id: string,
+        @Res() response: Response
+    ): Promise<any> {
+
+        let breakfastCalories = 0;
+        let lunchCalories = 0;
+        let dinnerCalories = 0;
+        let snacksCalories = 0;
+        let totalCalories = 0;
+
+        let breakfastCarbohydrates = 0;
+        let lunchCarbohydrates = 0;
+        let dinnerCarbohydrates = 0;
+        let snacksCarbohydrates = 0;
+        let totalCarbohydrates = 0;
+
+        let breakfastFats = 0;
+        let lunchFats = 0;
+        let dinnerFats = 0;
+        let snacksFats = 0;
+        let totalFats = 0;
+
+        let breakfastProteins = 0;
+        let lunchProteins = 0;
+        let dinnerProteins = 0;
+        let snacksProteins = 0;
+        let totalProteins = 0;
+
+        let user = await this.userService.findOne(id);
+        if(!user)
+            return this.responseFactory.notFound({ _general: 'users.user_not_found' }, response);
+
+        const today = new Date();
+        today.setUTCHours(0,0,0,0);
+
+        const todayUserMeals = await this.foodModel.findOne({ 
+            userId: id,
+            createdAt: { $gt: today } 
+        });
+
+        for(let breakfastItem = 0; breakfastItem < todayUserMeals['breakfast'].length; breakfastItem++) {
+            for(let j = 0; j < todayUserMeals['breakfast'][breakfastItem]['nutrition']['nutrients'].length; j++) {
+                let nutrientAmount = todayUserMeals['breakfast'][breakfastItem]['nutrition']['nutrients'][j]['amount'];
+                let servingsNr = 1;
+                if(todayUserMeals['breakfast'][breakfastItem]['chosen_serving_size'])
+                    servingsNr = todayUserMeals['breakfast'][breakfastItem]['chosen_serving_size'];
+                switch(todayUserMeals['breakfast'][breakfastItem]['nutrition']['nutrients'][j]['name']) {
+                    case 'Calories':
+                        breakfastCalories += nutrientAmount * servingsNr;
+                        break;
+                    case 'Carbohydrates':
+                        breakfastCarbohydrates += nutrientAmount * servingsNr;
+                        break;
+                    case 'Fats':
+                        breakfastFats += nutrientAmount * servingsNr;
+                        break;
+                    case 'Fat':
+                        breakfastFats += nutrientAmount * servingsNr;
+                        break;
+                    case 'Proteins':
+                        breakfastProteins += nutrientAmount * servingsNr;
+                        break;
+                    case 'Protein':
+                        breakfastProteins += nutrientAmount * servingsNr;
+                        break;
+                    default: 
+                        //console.log("Entered default case in breakfast switch");
+                }
+            }
+        }
+
+        for(let lunchItem = 0; lunchItem < todayUserMeals['lunch'].length; lunchItem++) {
+            for(let j = 0; j < todayUserMeals['lunch'][lunchItem]['nutrition']['nutrients'].length; j++) {
+                let nutrientAmount = todayUserMeals['lunch'][lunchItem]['nutrition']['nutrients'][j]['amount'];
+                let servingsNr = 1;
+                if(todayUserMeals['lunch'][lunchItem]['chosen_serving_size'])
+                    servingsNr = todayUserMeals['lunch'][lunchItem]['chosen_serving_size'];
+                switch(todayUserMeals['lunch'][lunchItem]['nutrition']['nutrients'][j]['name']) {
+                    case 'Calories':
+                        lunchCalories += nutrientAmount * servingsNr;
+                        break;
+                    case 'Carbohydrates':
+                        lunchCarbohydrates += nutrientAmount * servingsNr;
+                        break;
+                    case 'Fats':
+                        lunchFats += nutrientAmount * servingsNr;
+                        break;
+                    case 'Fat':
+                        lunchFats += nutrientAmount * servingsNr;
+                        break;
+                    case 'Proteins':
+                        lunchProteins += nutrientAmount * servingsNr;
+                        break;
+                    case 'Protein':
+                        lunchProteins += nutrientAmount * servingsNr;
+                        break;
+                    default: 
+                        //console.log("Entered default case in lunch switch");
+                }
+            }
+        }
+
+        for(let dinnerItem = 0; dinnerItem < todayUserMeals['dinner'].length; dinnerItem++) {
+            for(let j = 0; j < todayUserMeals['dinner'][dinnerItem]['nutrition']['nutrients'].length; j++) {
+                let nutrientAmount = todayUserMeals['dinner'][dinnerItem]['nutrition']['nutrients'][j]['amount'];
+                let servingsNr = 1;
+                if(todayUserMeals['dinner'][dinnerItem]['chosen_serving_size'])
+                    servingsNr = todayUserMeals['dinner'][dinnerItem]['chosen_serving_size'];
+                switch(todayUserMeals['dinner'][dinnerItem]['nutrition']['nutrients'][j]['name']) {
+                    case 'Calories':
+                        dinnerCalories += nutrientAmount * servingsNr;
+                        break;
+                    case 'Carbohydrates':
+                        dinnerCarbohydrates += nutrientAmount * servingsNr;
+                        break;
+                    case 'Fats':
+                        dinnerFats += nutrientAmount * servingsNr;
+                        break;
+                    case 'Fat':
+                        dinnerFats += nutrientAmount * servingsNr;
+                        break;
+                    case 'Proteins':
+                        dinnerProteins += nutrientAmount * servingsNr;
+                        break;
+                    case 'Protein':
+                        dinnerProteins += nutrientAmount * servingsNr;
+                        break;
+                    default: 
+                        //console.log("Entered default case in dinner switch");
+                }
+            }
+        }
+
+        for(let snack = 0; snack < todayUserMeals['snacks'].length; snack++) {
+            for(let j = 0; j < todayUserMeals['snacks'][snack]['nutrition']['nutrients'].length; j++) {
+                let nutrientAmount = todayUserMeals['snacks'][snack]['nutrition']['nutrients'][j]['amount'];
+                let servingsNr = 1;
+                if(todayUserMeals['snacks'][snack]['chosen_serving_size'])
+                    servingsNr = todayUserMeals['snacks'][snack]['chosen_serving_size'];
+                switch(todayUserMeals['snacks'][snack]['nutrition']['nutrients'][j]['name']) {
+                    case 'Calories':
+                        snacksCalories += nutrientAmount * servingsNr;
+                        break;
+                    case 'Carbohydrates':
+                        snacksCarbohydrates += nutrientAmount * servingsNr;
+                        break;
+                    case 'Fats':
+                        snacksFats += nutrientAmount * servingsNr;
+                        break;
+                    case 'Fat':
+                        snacksFats += nutrientAmount * servingsNr;
+                        break;
+                    case 'Proteins':
+                        snacksProteins += nutrientAmount * servingsNr;
+                        break;
+                    case 'Protein':
+                        snacksProteins += nutrientAmount * servingsNr;
+                        break;
+                    default: 
+                        //console.log("Entered default case in dinner switch");
+                }
+            }
+        }
+
+        totalCalories = breakfastCalories + lunchCalories + dinnerCalories + snacksCalories;
+        totalCarbohydrates = breakfastCarbohydrates + lunchCarbohydrates + dinnerCarbohydrates + snacksCarbohydrates;
+        totalFats = breakfastFats + lunchFats + dinnerFats + snacksFats;
+        totalProteins = breakfastProteins + lunchProteins + dinnerProteins + snacksProteins;
+
+        let calories = {
+            breakfastCalories,
+            lunchCalories,
+            dinnerCalories,
+            snacksCalories,
+            totalCalories
+        };
+
+        let carbohydrates = {
+            breakfastCarbohydrates,
+            lunchCarbohydrates,
+            dinnerCarbohydrates,
+            snacksCarbohydrates,
+            totalCarbohydrates
+        }
+
+        let fats = {
+            breakfastFats,
+            lunchFats,
+            dinnerFats,
+            snacksFats,
+            totalFats
+        }
+
+        let proteins = {
+            breakfastProteins,
+            lunchProteins,
+            dinnerProteins,
+            snacksProteins,
+            totalProteins
+        }
+
+        let nutrients = {
+            calories,
+            carbohydrates,
+            fats,
+            proteins
+        }
+
+        return this.responseFactory.ok(nutrients, response);
     }
 
 }
