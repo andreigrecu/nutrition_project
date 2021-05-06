@@ -182,6 +182,7 @@ export class UserController {
             userId: id,
             createdAt: { $gt: today } 
         });
+
         if(!userMenus)
             return this.responseFactory.notFound({ _general: 'users.userMenus_not_found'}, response);
 
@@ -245,9 +246,94 @@ export class UserController {
         });
 
         if(!userMeals)
-            return this.responseFactory.error({ _general: 'users.user_meals_not_found'}, response);
+            return this.responseFactory.error({ _general: 'users.user_meals_not_found' }, response);
 
         return this.responseFactory.ok(userMeals, response);
+    }
+
+    @Put(':id/lastWeekMeals')
+    async getUserLastWeekMeals(
+        @Body() body: string,
+        @Param('id') id: string,
+        @Res() response: Response
+    ): Promise<any> {
+
+        let user = await this.userService.findOne(id);
+        if(!user)
+            return this.responseFactory.notFound({ _general: 'users.user_not_foung' }, response);
+        
+        const today = new Date();
+        today.setUTCHours(0,0,0,0);
+        const lastWeek = new Date(today);
+        lastWeek.setDate(lastWeek.getDate() - 7);
+
+        const userMeals = await this.foodModel.find({
+            userId: id,
+            createdAt: { $gt: lastWeek }
+        })
+            .sort({ createdAt: -1 })
+        
+        if(!userMeals)
+            return this.responseFactory.notFound({ _general: 'users.user_meals_not_found' }, response);
+
+        const history: Array<any> = [];
+        let historyNumber = 0;
+
+        for(let meal = 0; meal < userMeals.length && historyNumber < 7; meal++) {
+            if(body['mealType'] === 'breakfast' && userMeals[meal]['breakfast'].length != 0) {
+                for(let j = 0; j < userMeals[meal]['breakfast'].length && historyNumber < 7; j++) {
+                    let ok = 0;
+                    for(let k = 0; k < history.length; k++)
+                        if(history[k]['id'] === userMeals[meal]['breakfast'][j]['id'])
+                            ok = 1;
+                    if(ok === 0) {
+                        history.push(userMeals[meal]['breakfast'][j]);
+                        historyNumber++;
+                    }
+                }
+            }
+
+            if(body['mealType'] === 'lunch' && userMeals[meal]['lunch'].length != 0) {
+                for(let j = 0; j < userMeals[meal]['lunch'].length && historyNumber < 7; j++) {
+                    let ok = 0;
+                    for(let k = 0; k < history.length; k++)
+                        if(history[k]['id'] === userMeals[meal]['lunch'][j]['id'])
+                            ok = 1;
+                    if(ok === 0) {
+                        history.push(userMeals[meal]['lunch'][j]);
+                        historyNumber++;
+                    }
+                }
+            }
+
+            if(body['mealType'] === 'dinner' && userMeals[meal]['dinner'].length != 0) {
+                for(let j = 0; j < userMeals[meal]['dinner'].length && historyNumber < 7; j++) {
+                    let ok = 0;
+                    for(let k = 0; k < history.length; k++)
+                        if(history[k]['id'] === userMeals[meal]['dinner'][j]['id'])
+                            ok = 1;
+                    if(ok === 0) {
+                        history.push(userMeals[meal]['dinner'][j]);
+                        historyNumber++;
+                    }
+                }
+            }
+
+            if(body['mealType'] === 'snacks' && userMeals[meal]['snacks'].length != 0) {
+                for(let j = 0; j < userMeals[meal]['snacks'].length && historyNumber < 7; j++) {
+                    let ok = 0;
+                    for(let k = 0; k < history.length; k++)
+                        if(history[k]['id'] === userMeals[meal]['snacks'][j]['id'])
+                            ok = 1;
+                    if(ok === 0) {
+                        history.push(userMeals[meal]['snacks'][j]);
+                        historyNumber++;
+                    }
+                }
+            }
+        }
+
+        return this.responseFactory.ok(history, response);
     }
 
     @Get(':id/todayMeals')
