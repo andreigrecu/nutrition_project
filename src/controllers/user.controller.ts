@@ -1,4 +1,4 @@
-import { Controller, Post, Body, Get, Res, Query, Put, Param} from '@nestjs/common';
+import { Controller, Post, Body, Get, Res, Query, Put, Param, Delete} from '@nestjs/common';
 import { UserService } from '../services/user.service';
 import { ApiTags, ApiQuery } from "@nestjs/swagger";
 import { CreateUserDto } from '../dtos/createUser.dto';
@@ -13,13 +13,14 @@ import { AuthDto } from '../dtos/auth.dto';
 import { PasswordService } from '../services/password.service';
 import { UpdateUserDto } from '../dtos/updateUser.dto';
 import { UserInfo } from '../entities/userInfo';
-import { UserInfoService } from '../services/userInfo.service';
 import { UpdateUserFoodDto } from '../dtos/updateUserFood.dto';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Food } from '../models/food.model';
 import { FoodService } from '../services/food.service';
 import { ChangePasswordDto } from '../dtos/changePassword.dto';
+import { DeleteFoodItemDto } from '../dtos/deleteFoodItem.dto';
+import { MealType } from '../common/mealType';
 
 @ApiTags('Users')
 @Controller('users')
@@ -200,6 +201,56 @@ export class UserController {
         return this.responseFactory.ok(newFood, response);
     }
 
+    @Delete(':id/deleteFoodItem')
+    async deleteFoodItem(
+        @Param('id') id: string,
+        @Res() response: Response,
+        @Body() deleteFoodItemDto: DeleteFoodItemDto
+    ): Promise<any> {
+
+        const user = await this.userService.findOne(id);
+        if(!user)
+            return this.responseFactory.notFound({ _general: 'users.user_not_found' }, response);
+
+        const today = new Date();
+        today.setUTCHours(0,0,0,0);
+
+        let userMenus = await this.foodModel.findOne({ 
+            userId: id,
+            createdAt: { $gt: today } 
+        });
+        if(!userMenus)
+            return this.responseFactory.notFound({ _general: 'users.userMenus_not_found'}, response);
+
+        let mealTypeSearch;
+        if(deleteFoodItemDto.mealType === MealType.breakfast)
+            mealTypeSearch = MealType.breakfast;
+        else if(deleteFoodItemDto.mealType === MealType.lunch)
+            mealTypeSearch = MealType.lunch;
+        else if(deleteFoodItemDto.mealType === MealType.dinner)
+            mealTypeSearch = MealType.dinner;
+        else if(deleteFoodItemDto.mealType === MealType.snacks)
+            mealTypeSearch = MealType.snacks;
+        else
+            return this.responseFactory.error({ _general: 'users.deleteDto_mealType_has_wrong_form' }, response);
+
+        for(let i = 0; i < userMenus[mealTypeSearch].length; i++)
+           if(userMenus[mealTypeSearch][i]['id'] == deleteFoodItemDto.foodId && i === deleteFoodItemDto.indexDelete) {
+               if(parseFloat(userMenus[mealTypeSearch][i]['chosen_serving_size']) > deleteFoodItemDto.nrOfServings) {
+                    userMenus[mealTypeSearch][i]['chosen_serving_size'] = parseFloat(userMenus[mealTypeSearch][i]['chosen_serving_size']) + (-deleteFoodItemDto.nrOfServings);
+                    const userMenusAlso = userMenus[mealTypeSearch][i];
+                    userMenus[mealTypeSearch].splice(i, 1, userMenusAlso);
+                    await userMenus.save();
+               } else {
+                    userMenus[mealTypeSearch].splice(i, 1);
+                    await userMenus.save();
+               }
+           }
+        
+
+        return this.responseFactory.ok(userMenus, response);
+    }
+
     @Post(':id/change-password')
     async changePassword(
         @Param('id') id: string,
@@ -349,7 +400,7 @@ export class UserController {
         const today = new Date();
         today.setUTCHours(0,0,0,0);
 
-        const todayUserMeals = await this.foodModel.find({ 
+        const todayUserMeals = await this.foodModel.findOne({ 
             userId: id,
             createdAt: { $gt: today } 
         });
