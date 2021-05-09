@@ -7,7 +7,7 @@ export const FoodSchema = new mongoose.Schema({
     breakfast: [],
     lunch: [],
     dinner: [],
-    snacks: []
+    snacks: [],
 })
 
 export interface Food extends mongoose.Document {
