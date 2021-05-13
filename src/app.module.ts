@@ -13,6 +13,7 @@ import { ProgramModule } from './modules/program.module';
 import { ScheduleModule } from '@nestjs/schedule';
 import { FoodModule } from './modules/food.module';
 import { ForgotPasswordModule } from './modules/forgotPassword.module';
+import { AuthModule } from './modules/auth.module';
 
 @Module({
   imports: [
@@ -34,6 +35,7 @@ import { ForgotPasswordModule } from './modules/forgotPassword.module';
     CustomerModule,
     FoodModule,
     ProgramModule,
+    AuthModule,
     ForgotPasswordModule,
     MongooseModule.forRoot('mongodb://127.0.0.1:27017/project'),
     MailerModule.forRoot({

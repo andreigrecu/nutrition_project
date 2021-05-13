@@ -1,6 +1,6 @@
-import { Controller, Post, Body, Get, Res, Query, Put, Param, Delete} from '@nestjs/common';
+import { Controller, Post, Body, Get, Res, Query, Put, Param, Delete, UseGuards, UseFilters} from '@nestjs/common';
 import { UserService } from '../services/user.service';
-import { ApiTags, ApiQuery } from "@nestjs/swagger";
+import { ApiTags, ApiQuery, ApiBearerAuth } from "@nestjs/swagger";
 import { CreateUserDto } from '../dtos/createUser.dto';
 import { ResponseFactory } from '../factories/ResponseFactory';
 import { Response } from 'express';
@@ -21,6 +21,7 @@ import { FoodService } from '../services/food.service';
 import { ChangePasswordDto } from '../dtos/changePassword.dto';
 import { DeleteFoodItemDto } from '../dtos/deleteFoodItem.dto';
 import { MealType } from '../common/mealType';
+import { AuthGuard } from '@nestjs/passport';
 
 @ApiTags('Users')
 @Controller('users')
@@ -37,6 +38,8 @@ export class UserController {
         private readonly foodModel: Model<Food>,
     ) { }
 
+    @ApiBearerAuth()
+    @UseGuards(AuthGuard('jwt'))
     @Get()
     @ApiQuery({ name: 'sort_direction', type: String, required: false, description: " ASC | DESC" })
     @ApiQuery({ name: 'sort_order', type: String, required: false })
@@ -103,7 +106,10 @@ export class UserController {
 
         if(!userDailyPlan)
             return this.responseFactory.error({ _general: 'users.user_daily_plan_not_created' }, response);
+
+        const token = await this.passwordService.createToken(createUserDto.email, user.id);
         
+        //trebuie transmit token ul si la register
         return this.responseFactory.ok(user, response);
    
     }
@@ -124,7 +130,6 @@ export class UserController {
         if(!isValid)
             return this.responseFactory.notFound({ _general: 'auth.user_not_found' }, response);
 
-        //use it to auth on swagger, later
         const token = await this.passwordService.createToken(authDto.email, user.id);
 
         await this.userService.updateUserFirstLoginField(user);
