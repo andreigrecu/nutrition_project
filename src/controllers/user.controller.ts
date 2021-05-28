@@ -38,8 +38,8 @@ export class UserController {
         private readonly foodModel: Model<Food>,
     ) { }
 
-    @ApiBearerAuth()
-    @UseGuards(AuthGuard('jwt'))
+    //@ApiBearerAuth()
+    //@UseGuards(AuthGuard('jwt'))
     @Get()
     @ApiQuery({ name: 'sort_direction', type: String, required: false, description: " ASC | DESC" })
     @ApiQuery({ name: 'sort_order', type: String, required: false })
@@ -256,7 +256,7 @@ export class UserController {
         return this.responseFactory.ok(userMenus, response);
     }
 
-    @Post(':id/change-password')
+    @Post(':id/changePassword')
     async changePassword(
         @Param('id') id: string,
         @Body() changePasswordDto: ChangePasswordDto,
