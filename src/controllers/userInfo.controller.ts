@@ -68,7 +68,7 @@ export class UserInfoController {
         const usersInfo = await this.userInfoService.getAll();
 
         if(!usersInfo)
-            return this.responseFactory.notFound({ _general: 'usersInfo.usersInfos_not_found' }, response)
+            return this.responseFactory.notFound({ _general: 'usersInfo.usersInfos_not_found' }, response);
 
         return this.responseFactory.ok(usersInfo, response);
     }

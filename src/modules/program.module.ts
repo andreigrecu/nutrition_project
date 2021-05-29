@@ -4,6 +4,7 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { ProgramSchema } from "../models/program.model";
 import { ProgramsController } from "../controllers/program.controller";
 import { ProgramService } from "../services/program.service";
+import { ResponseFactory } from '../factories/ResponseFactory';
 
 @Module({
     imports:[
@@ -16,7 +17,8 @@ import { ProgramService } from "../services/program.service";
     ],
     exports: [TypeOrmModule],
     providers: [
-        ProgramService    
+        ProgramService,
+        ResponseFactory 
     ],
     controllers: [
       ProgramsController
