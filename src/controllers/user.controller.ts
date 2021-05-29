@@ -22,6 +22,7 @@ import { ChangePasswordDto } from '../dtos/changePassword.dto';
 import { DeleteFoodItemDto } from '../dtos/deleteFoodItem.dto';
 import { MealType } from '../common/mealType';
 import { AuthGuard } from '@nestjs/passport';
+import { Program } from '../models/program.model';
 
 @ApiTags('Users')
 @Controller('users')
@@ -36,6 +37,8 @@ export class UserController {
         private readonly foodService: FoodService,
         @InjectModel('Food')
         private readonly foodModel: Model<Food>,
+        @InjectModel('Program')
+        private readonly programModel: Model<Program>
     ) { }
 
     //@ApiBearerAuth()
@@ -166,6 +169,19 @@ export class UserController {
         const userInfo: UserInfo = await this.userService.getUserInfo(id);
         if(!userInfo)
             return this.responseFactory.notFound({ _general: 'users.userInfo_not_found'}, response);
+
+        let program = {};
+
+        if(userInfo['programId'] && userInfo['programId'] != ' ') {
+            program = await this.programModel.findOne({
+                _id: userInfo.programId
+            });
+            
+            if(!program)
+                return this.responseFactory.notFound({ _general: 'programs.program_not_found' }, response);
+        }
+
+        Object.assign(userInfo, { program });
         
         return this.responseFactory.ok(userInfo, response);
     }

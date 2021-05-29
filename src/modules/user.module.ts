@@ -13,6 +13,7 @@ import { UserInfoService } from '../services/userInfo.service';
 import { FoodService } from '../services/food.service';
 import { MongooseModule } from '@nestjs/mongoose';
 import { FoodSchema } from '../models/food.model';
+import { ProgramSchema } from '../models/program.model';
 
 @Module({
   imports: [
@@ -21,6 +22,11 @@ import { FoodSchema } from '../models/food.model';
         { name: 'Food', schema: FoodSchema },
       ]
     ),    
+    MongooseModule.forFeature(
+      [
+        { name: 'Program', schema: ProgramSchema },
+      ]
+    ),  
     BullModule.registerQueue({
       name: 'email',
       redis: {

@@ -47,7 +47,7 @@ export class FoodsController {
         return this.responseFactory.ok(food, response);
     }
 
-    @Cron('05 34 10 * * *')
+    @Cron('05 21 10 * * *')
     async dailyCreate(
     ): Promise<any> {
         let userDailyPlan;
