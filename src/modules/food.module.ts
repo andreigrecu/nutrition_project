@@ -9,6 +9,8 @@ import { UserService } from "../services/user.service";
 import { User } from "../entities/user";
 import { UserInfo } from "../entities/userInfo";
 import { PasswordService } from "../services/password.service";
+import { UserInfoService } from "../services/userInfo.service";
+import { ProgramSchema } from "../models/program.model";
 
 @Module({
     imports:[
@@ -19,6 +21,7 @@ import { PasswordService } from "../services/password.service";
         MongooseModule.forFeature(
             [
               { name: 'Food', schema: FoodSchema },
+              { name: 'Program', schema: ProgramSchema },
             ]
         ),    
     ],
@@ -27,7 +30,8 @@ import { PasswordService } from "../services/password.service";
         FoodService,
         ResponseFactory,
         UserService,
-        PasswordService
+        PasswordService,
+        UserInfoService
     ],
     controllers: [
       FoodsController
