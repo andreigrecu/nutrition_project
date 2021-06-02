@@ -17,7 +17,12 @@ export class FoodService {
     breakfast: any,
     lunch: any,
     dinner: any,
-    snacks: any
+    snacks: any,
+    programId: string,
+    caloriesGoal: number,
+    carbosGoal: number,
+    fatsGoal: number,
+    proteinsGoal: number
   ) {
       const newFoodAction = new this.foodModel({
         createdAt,
@@ -26,7 +31,12 @@ export class FoodService {
         breakfast,
         lunch,
         dinner,
-        snacks
+        snacks,
+        programId,
+        caloriesGoal,
+        carbosGoal,
+        fatsGoal,
+        proteinsGoal
       });
       
       return await newFoodAction.save();

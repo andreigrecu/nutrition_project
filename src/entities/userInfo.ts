@@ -1,4 +1,3 @@
-import { IsEmail, IsString } from 'class-validator';
 import { Entity, Column } from 'typeorm';
 import { CoreEntity } from './coreEntity';
 

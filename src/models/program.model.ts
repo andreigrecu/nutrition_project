@@ -13,8 +13,8 @@ export interface Program extends mongoose.Document {
   id: string;
   createdAt: Date;
   updatedAt: Date;
-  name: String;
-  description: String;
-  percentageType: Number;
-  imageName: String;
+  name: string;
+  description: string;
+  percentageType: number;
+  imageName: string;
 }

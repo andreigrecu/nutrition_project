@@ -104,7 +104,12 @@ export class UserController {
             [],
             [],
             [],
-            []
+            [],
+            null,
+            0,
+            0,
+            0,
+            0
         )
 
         if(!userDailyPlan)
@@ -430,6 +435,258 @@ export class UserController {
             return this.responseFactory.error({ _general: 'users.user_today_meals_not_found'}, response);
 
         return this.responseFactory.ok(todayUserMeals, response);
+    }
+
+    @Get(':id/last7DaysMeals')
+    async getLast7DaysMeals(
+        @Param('id') id:string,
+        @Res() response: Response
+    ): Promise<any> {
+
+        let user = await this.userService.findOne(id);
+        if(!user)
+            return this.responseFactory.notFound({ _general: 'users.user_not_found '}, response);
+
+        const today = new Date();
+        today.setUTCHours(0,0,0,0);
+        const lastWeek = new Date(today);
+        lastWeek.setDate(lastWeek.getDate() - 7);
+    
+        const userMeals = await this.foodModel.find({
+            userId: id,
+            createdAt: { $gt: lastWeek }
+        })
+            .sort({ createdAt: -1 })
+
+        if(!userMeals)
+            return this.responseFactory.notFound({ _general: "users.meals_not_found" }, response);
+        
+        return this.responseFactory.ok(userMeals, response);
+    }
+
+    @Get(':id/lastWeekNutrients')
+    async getLastWeekNutrients(
+        @Param('id') id: string,
+        @Res() response: Response
+    ): Promise<any> {
+
+        let dailyNutrientsArray = [];
+        let user = await this.userService.findOne(id);
+        if(!user)
+            return this.responseFactory.notFound({ _general: 'users.user_not_found '}, response);
+
+        const today = new Date();
+        today.setUTCHours(0,0,0,0);
+        const lastWeek = new Date(today);
+        lastWeek.setDate(lastWeek.getDate() - 7);
+
+        const userMeals = await this.foodModel.find({
+            userId: id,
+            createdAt: { $gt: lastWeek }
+        })
+            .sort({ createdAt: -1 })
+
+        if(!userMeals)
+            return this.responseFactory.notFound({ _general: "users.meals_not_found" }, response);
+
+        for(let meal = 0; meal < userMeals.length; meal++) {
+            let breakfastCalories = 0;
+            let lunchCalories = 0;
+            let dinnerCalories = 0;
+            let snacksCalories = 0;
+            let totalCalories = 0;
+
+            let breakfastCarbohydrates = 0;
+            let lunchCarbohydrates = 0;
+            let dinnerCarbohydrates = 0;
+            let snacksCarbohydrates = 0;
+            let totalCarbohydrates = 0;
+
+            let breakfastFats = 0;
+            let lunchFats = 0;
+            let dinnerFats = 0;
+            let snacksFats = 0;
+            let totalFats = 0;
+
+            let breakfastProteins = 0;
+            let lunchProteins = 0;
+            let dinnerProteins = 0;
+            let snacksProteins = 0;
+            let totalProteins = 0;
+
+            for(let breakfastItem = 0; breakfastItem < userMeals[meal]['breakfast'].length; breakfastItem++) {
+                for(let j = 0; j < userMeals[meal]['breakfast'][breakfastItem]['nutrition']['nutrients'].length; j++) {
+                    let nutrientAmount = userMeals[meal]['breakfast'][breakfastItem]['nutrition']['nutrients'][j]['amount'];
+                    let servingsNr = 1;
+                    if(userMeals[meal]['breakfast'][breakfastItem]['chosen_serving_size'])
+                        servingsNr = userMeals[meal]['breakfast'][breakfastItem]['chosen_serving_size'];
+                    switch(userMeals[meal]['breakfast'][breakfastItem]['nutrition']['nutrients'][j]['name']) {
+                        case 'Calories':
+                            breakfastCalories += nutrientAmount * servingsNr;
+                            break;
+                        case 'Carbohydrates':
+                            breakfastCarbohydrates += nutrientAmount * servingsNr;
+                            break;
+                        case 'Fats':
+                            breakfastFats += nutrientAmount * servingsNr;
+                            break;
+                        case 'Fat':
+                            breakfastFats += nutrientAmount * servingsNr;
+                            break;
+                        case 'Proteins':
+                            breakfastProteins += nutrientAmount * servingsNr;
+                            break;
+                        case 'Protein':
+                            breakfastProteins += nutrientAmount * servingsNr;
+                            break;
+                        default: 
+                            //console.log("Entered default case in breakfast switch");
+                    }
+                }
+            }
+    
+            for(let lunchItem = 0; lunchItem < userMeals[meal]['lunch'].length; lunchItem++) {
+                for(let j = 0; j < userMeals[meal]['lunch'][lunchItem]['nutrition']['nutrients'].length; j++) {
+                    let nutrientAmount = userMeals[meal]['lunch'][lunchItem]['nutrition']['nutrients'][j]['amount'];
+                    let servingsNr = 1;
+                    if(userMeals[meal]['lunch'][lunchItem]['chosen_serving_size'])
+                        servingsNr = userMeals[meal]['lunch'][lunchItem]['chosen_serving_size'];
+                    switch(userMeals[meal]['lunch'][lunchItem]['nutrition']['nutrients'][j]['name']) {
+                        case 'Calories':
+                            lunchCalories += nutrientAmount * servingsNr;
+                            break;
+                        case 'Carbohydrates':
+                            lunchCarbohydrates += nutrientAmount * servingsNr;
+                            break;
+                        case 'Fats':
+                            lunchFats += nutrientAmount * servingsNr;
+                            break;
+                        case 'Fat':
+                            lunchFats += nutrientAmount * servingsNr;
+                            break;
+                        case 'Proteins':
+                            lunchProteins += nutrientAmount * servingsNr;
+                            break;
+                        case 'Protein':
+                            lunchProteins += nutrientAmount * servingsNr;
+                            break;
+                        default: 
+                            //console.log("Entered default case in lunch switch");
+                    }
+                }
+            }
+    
+            for(let dinnerItem = 0; dinnerItem < userMeals[meal]['dinner'].length; dinnerItem++) {
+                for(let j = 0; j < userMeals[meal]['dinner'][dinnerItem]['nutrition']['nutrients'].length; j++) {
+                    let nutrientAmount = userMeals[meal]['dinner'][dinnerItem]['nutrition']['nutrients'][j]['amount'];
+                    let servingsNr = 1;
+                    if(userMeals[meal]['dinner'][dinnerItem]['chosen_serving_size'])
+                        servingsNr = userMeals[meal]['dinner'][dinnerItem]['chosen_serving_size'];
+                    switch(userMeals[meal]['dinner'][dinnerItem]['nutrition']['nutrients'][j]['name']) {
+                        case 'Calories':
+                            dinnerCalories += nutrientAmount * servingsNr;
+                            break;
+                        case 'Carbohydrates':
+                            dinnerCarbohydrates += nutrientAmount * servingsNr;
+                            break;
+                        case 'Fats':
+                            dinnerFats += nutrientAmount * servingsNr;
+                            break;
+                        case 'Fat':
+                            dinnerFats += nutrientAmount * servingsNr;
+                            break;
+                        case 'Proteins':
+                            dinnerProteins += nutrientAmount * servingsNr;
+                            break;
+                        case 'Protein':
+                            dinnerProteins += nutrientAmount * servingsNr;
+                            break;
+                        default: 
+                            //console.log("Entered default case in dinner switch");
+                    }
+                }
+            }
+    
+            for(let snack = 0; snack < userMeals[meal]['snacks'].length; snack++) {
+                for(let j = 0; j < userMeals[meal]['snacks'][snack]['nutrition']['nutrients'].length; j++) {
+                    let nutrientAmount = userMeals[meal]['snacks'][snack]['nutrition']['nutrients'][j]['amount'];
+                    let servingsNr = 1;
+                    if(userMeals[meal]['snacks'][snack]['chosen_serving_size'])
+                        servingsNr = userMeals[meal]['snacks'][snack]['chosen_serving_size'];
+                    switch(userMeals[meal]['snacks'][snack]['nutrition']['nutrients'][j]['name']) {
+                        case 'Calories':
+                            snacksCalories += nutrientAmount * servingsNr;
+                            break;
+                        case 'Carbohydrates':
+                            snacksCarbohydrates += nutrientAmount * servingsNr;
+                            break;
+                        case 'Fats':
+                            snacksFats += nutrientAmount * servingsNr;
+                            break;
+                        case 'Fat':
+                            snacksFats += nutrientAmount * servingsNr;
+                            break;
+                        case 'Proteins':
+                            snacksProteins += nutrientAmount * servingsNr;
+                            break;
+                        case 'Protein':
+                            snacksProteins += nutrientAmount * servingsNr;
+                            break;
+                        default: 
+                            //console.log("Entered default case in dinner switch");
+                    }
+                }
+            }
+    
+            totalCalories = breakfastCalories + lunchCalories + dinnerCalories + snacksCalories;
+            totalCarbohydrates = breakfastCarbohydrates + lunchCarbohydrates + dinnerCarbohydrates + snacksCarbohydrates;
+            totalFats = breakfastFats + lunchFats + dinnerFats + snacksFats;
+            totalProteins = breakfastProteins + lunchProteins + dinnerProteins + snacksProteins;
+    
+            let calories = {
+                breakfastCalories,
+                lunchCalories,
+                dinnerCalories,
+                snacksCalories,
+                totalCalories
+            };
+    
+            let carbohydrates = {
+                breakfastCarbohydrates,
+                lunchCarbohydrates,
+                dinnerCarbohydrates,
+                snacksCarbohydrates,
+                totalCarbohydrates
+            }
+    
+            let fats = {
+                breakfastFats,
+                lunchFats,
+                dinnerFats,
+                snacksFats,
+                totalFats
+            }
+    
+            let proteins = {
+                breakfastProteins,
+                lunchProteins,
+                dinnerProteins,
+                snacksProteins,
+                totalProteins
+            }
+    
+            let nutrients = {
+                calories,
+                carbohydrates,
+                fats,
+                proteins
+            }
+
+            dailyNutrientsArray.push(nutrients);
+        }
+
+        return this.responseFactory.ok(dailyNutrientsArray, response);
+
     }
 
     @Get(':id/todayNutrients')
