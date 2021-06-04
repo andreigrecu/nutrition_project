@@ -30,7 +30,10 @@ export class ProgramsController {
             programDto.name,
             programDto.description,
             programDto.percentageType,
-            programDto.imageName
+            programDto.imageName,
+            programDto.carbosPercent,
+            programDto.fatsPercent,
+            programDto.proteinsPercent
         )
 
         return program;
