@@ -16,7 +16,10 @@ export class ProgramService {
     name: String,
     description: String,
     percentageType: Number,
-    imageName: String
+    imageName: String,
+    carbosPercent: number,
+    fatsPercent: number,
+    proteinsPercent: number
   ) {
         const newProgramAction = new this.programModel({
             createdAt,
@@ -24,7 +27,10 @@ export class ProgramService {
             name,
             description,
             percentageType,
-            imageName
+            imageName,
+            carbosPercent,
+            fatsPercent,
+            proteinsPercent
         });
 
         return await newProgramAction.save();

@@ -30,4 +30,25 @@ export class ProgramDto {
   })
   readonly imageName: String;
 
+  @ApiProperty({
+    type: Number,
+    description: "The carbos percentage",
+    default:''
+  })
+  readonly carbosPercent: number;
+
+  @ApiProperty({
+    type: Number,
+    description: "The fats percentage",
+    default:''
+  })
+  readonly fatsPercent: number;
+
+  @ApiProperty({
+    type: Number,
+    description: "The proteins percentage",
+    default:''
+  })
+  readonly proteinsPercent: number;
+
 }
