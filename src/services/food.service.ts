@@ -22,7 +22,8 @@ export class FoodService {
     caloriesGoal: number,
     carbosGoal: number,
     fatsGoal: number,
-    proteinsGoal: number
+    proteinsGoal: number,
+    workout: number
   ) {
       const newFoodAction = new this.foodModel({
         createdAt,
@@ -36,7 +37,8 @@ export class FoodService {
         caloriesGoal,
         carbosGoal,
         fatsGoal,
-        proteinsGoal
+        proteinsGoal,
+        workout
       });
       
       return await newFoodAction.save();
