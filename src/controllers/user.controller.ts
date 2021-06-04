@@ -23,6 +23,7 @@ import { DeleteFoodItemDto } from '../dtos/deleteFoodItem.dto';
 import { MealType } from '../common/mealType';
 import { AuthGuard } from '@nestjs/passport';
 import { Program } from '../models/program.model';
+import { UpdateWorkoutDto } from '../dtos/updateWorkoutDto';
 
 @ApiTags('Users')
 @Controller('users')
@@ -106,6 +107,7 @@ export class UserController {
             [],
             [],
             null,
+            0,
             0,
             0,
             0,
@@ -464,6 +466,37 @@ export class UserController {
         return this.responseFactory.ok(userMeals, response);
     }
 
+    @Put(':id/updateWorkout')
+    async updateWorkout(
+        @Param('id') id: string,
+        @Body() updateWorkoutDto: UpdateWorkoutDto,
+        @Res() response: Response
+    ): Promise<any> {
+
+        let user = await this.userService.findOne(id);
+        if(!user)
+            return this.responseFactory.notFound({ _general: 'users.user_not_foung' }, response);
+        
+        const today = new Date();
+        today.setUTCHours(0,0,0,0);
+
+        const todayUserMeals = await this.foodModel.findOne({
+            userId: id,
+            createdAt: { $gt: today }
+        })
+
+        if(!todayUserMeals)
+            return this.responseFactory.error({ _general: 'users.user_today_meals_not_found'}, response);
+
+        todayUserMeals.workout = todayUserMeals.workout + updateWorkoutDto.workoutVal;
+        const updateWorkout = await todayUserMeals.save(); 
+        if(!updateWorkout)
+            return this.responseFactory.error({ _general: 'user.update_workout_didnt_work' }, response);
+
+        return this.responseFactory.ok(updateWorkout, response);
+
+    }
+
     @Get(':id/lastWeekNutrients')
     async getLastWeekNutrients(
         @Param('id') id: string,
@@ -682,6 +715,11 @@ export class UserController {
                 proteins
             }
 
+            if(userMeals[meal]['workout'])
+               nutrients['workoutValue'] = userMeals[meal]['workout'];
+            else
+                nutrients['workoutValue'] = 0;
+            
             dailyNutrientsArray.push(nutrients);
         }
 
@@ -730,6 +768,7 @@ export class UserController {
             userId: id,
             createdAt: { $gt: today } 
         });
+
 
         for(let breakfastItem = 0; breakfastItem < todayUserMeals['breakfast'].length; breakfastItem++) {
             for(let j = 0; j < todayUserMeals['breakfast'][breakfastItem]['nutrition']['nutrients'].length; j++) {
@@ -896,7 +935,8 @@ export class UserController {
             calories,
             carbohydrates,
             fats,
-            proteins
+            proteins,
+            workout: todayUserMeals['workout']
         }
 
         return this.responseFactory.ok(nutrients, response);

@@ -13,6 +13,7 @@ export const FoodSchema = new mongoose.Schema({
     carbosGoal: { type: Number, required: true },
     fatsGoal: { type: Number, required: true },
     proteinsGoal: { type: Number, required: true },
+    workout: { type: Number, required: true }
 })
 
 export interface Food extends mongoose.Document {
@@ -29,4 +30,5 @@ export interface Food extends mongoose.Document {
     carbosGoal: number;
     fastsGoal: number;
     proteinsGoal: number;
+    workout: number;
 }

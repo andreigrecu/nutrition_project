@@ -48,6 +48,7 @@ export class FoodsController {
             0,
             0,
             0,
+            0,
             0
         )
 
@@ -58,7 +59,7 @@ export class FoodsController {
     }
 
     //la o 00:00:01 o sa fie cronjob-ul
-    @Cron('10 15 09 * * *')
+    @Cron('45 26 10 * * *')
     async dailyCreate(
     ): Promise<any> {
         let userDailyPlan;
@@ -77,6 +78,7 @@ export class FoodsController {
                 0,
                 0,
                 0,
+                0,
                 0
             )
             .catch(error => console.log(error))
@@ -86,7 +88,7 @@ export class FoodsController {
     }
 
     //la 23:59:59 o sa fie
-    @Cron('55 15 09 * * *')
+    @Cron('45 26 9 * * *')
     async dailyGoals(
         @Res() response: Response
     ): Promise<any> {
