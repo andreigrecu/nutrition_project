@@ -95,3 +95,5 @@ npm i jsonwebtoken
 npm install --save @nestjs/schedule
 
 npm install --save-dev @types/cron
+
+npm i rand-token
