@@ -10,6 +10,11 @@ import { InjectQueue } from '@nestjs/bull';
 import { Queue } from 'bull';
 import { MailerService } from '@nest-modules/mailer';
 import { ReactivatePasswordDto } from '../dtos/reactivatePassword.dto';
+import { uid, suid } from 'rand-token';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { User } from '../entities/user';
+import { PasswordService } from '../services/password.service';
 
 @ApiTags('ForgotPassword')
 @Controller('forgot-passwords')
@@ -19,10 +24,13 @@ export class ForgotPasswordController {
         private forgotPasswordService: ForgotPasswordService,
         private userService: UserService,
         private readonly responseFactory: ResponseFactory,
+        private readonly passwordService: PasswordService,
         private emailQueueProducer: EmailQueueProducer,
         @InjectQueue('email')
         private emailQueue: Queue,
         private readonly mailerService: MailerService,
+        @InjectRepository(User) 
+        private userRepository: Repository<User>,
     ) { }
 
     @Post('forgot-password')
@@ -36,15 +44,15 @@ export class ForgotPasswordController {
 
         if(user) {
 
-            //const token = suid(32);
-            //const reset_link = 'https://processify.io/#/account/forgot-password/' + token;
-            const reset_link = '';
-           // await this.userRepository.update(user.id, {token: token, valid_token: new Date()})
+            const token = suid(32);
+            const reset_link = 'http://localhost:3000/reset/' + token;
+
+            await this.userRepository.update(user.id, {token: token, valid_token: new Date()})
 
             this.emailQueueProducer.add({
                 time: new Date(),
                 to: email, 
-                from: 'webitfactory2020@gmail.com', 
+                from: 'proiectlicenta2021@gmail.com', 
                 subject: 'Reset your password', 
                 template:  'forgotPassword.html',
                 context: {
@@ -52,7 +60,7 @@ export class ForgotPasswordController {
                 }
               });
         } else {
-            return this.responseFactory.error('This user doesn`t exist', response);
+            return this.responseFactory.notFound( { _general: 'forgotPassword.user_not_found' }, response);
         }
 
         return this.responseFactory.ok(user, response);
@@ -66,14 +74,13 @@ export class ForgotPasswordController {
     
         const { token, new_password, confirm_password } = reactivatePasswordDto;
 
-        //fiecare user o sa aiba un token
-        // const user = await this.userRepository.findOne({
-        //     where: {
-        //         token: token,
-        //     },  
-        // });
+        const user = await this.userRepository.findOne({
+            where: {
+                token: token,
+            },  
+        });
 
-        /*if(user && user.valid_token != null && new Date().getTime() - user.valid_token.getTime() < 86400000) {
+        if(user && user.valid_token != null && new Date().getTime() - user.valid_token.getTime() < 86400000) {
             if(new_password === confirm_password) {
                 const password_generated = await this.passwordService.generatePassword(
                     reactivatePasswordDto.new_password,
@@ -86,7 +93,7 @@ export class ForgotPasswordController {
         } else {
             return this.responseFactory.error("Invalid token", response);
         }
-        return this.responseFactory.ok(user, response)*/
+        return this.responseFactory.ok(user, response)
   }
 
 }
