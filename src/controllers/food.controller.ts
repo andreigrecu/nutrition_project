@@ -59,7 +59,7 @@ export class FoodsController {
     }
 
     //la o 00:00:01 o sa fie cronjob-ul
-    @Cron('45 26 10 * * *')
+    @Cron('20 39 10 * * *')
     async dailyCreate(
     ): Promise<any> {
         let userDailyPlan;
