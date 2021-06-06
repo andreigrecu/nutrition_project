@@ -88,7 +88,7 @@ export class FoodsController {
     }
 
     //la 23:59:59 o sa fie
-    @Cron('45 26 9 * * *')
+    @Cron('48 37 17 * * *')
     async dailyGoals(
         @Res() response: Response
     ): Promise<any> {
@@ -100,59 +100,58 @@ export class FoodsController {
         let BMR:number = 0;
         for(let i = 0; i < users.length; i++) {
             const userInfo = await this.userInfoService.findOne(users[i].id);
-            if(!userInfo)
-                return this.responseFactory.notFound({ _general: "food.userInfo_not_found" }, response);
 
-            let sameBMR =  10 * userInfo['weight'] + 
-                6.25 * userInfo['height'] - 5 * userInfo['age'];
+            if(userInfo) {
+                let sameBMR =  10 * userInfo['weight'] + 
+                    6.25 * userInfo['height'] - 5 * userInfo['age'];
 
-            if(userInfo['gender'] === 'male') {
-                BMR = sameBMR + 5;
-            } else if(userInfo['gender'] === 'female') {
-                BMR = sameBMR - 161;
-            }
+                if(userInfo['gender'] === 'male') {
+                    BMR = sameBMR + 5;
+                } else if(userInfo['gender'] === 'female') {
+                    BMR = sameBMR - 161;
+                }
 
+                let carbosGramsGoal = 0;
+                let fatsGramsGoal = 0;
+                let proteinsGramsGoal = 0;
+                if(userInfo && userInfo['programId'] && userInfo['programId'] != " ") {
+                    const program = await this.programModel.findOne({
+                        _id: userInfo['programId']
+                    });
 
-            let carbosGramsGoal = 0;
-            let fatsGramsGoal = 0;
-            let proteinsGramsGoal = 0;
-            if(userInfo['programId'] && userInfo['programId'] != " ") {
-                const program = await this.programModel.findOne({
-                    _id: userInfo['programId']
+                    if(!program)
+                        return this.responseFactory.notFound({ _general: 'programs.program_not_found' }, response);
+
+                    let percentage = program['percentageType'] - 100;
+                    BMR = parseInt((BMR + ((percentage * BMR) / 100 )).toFixed());
+                
+                    if(userInfo['carbohydratesPercent'] >= 0)
+                        carbosGramsGoal = parseInt(((userInfo['carbohydratesPercent'] * BMR) / 400).toFixed());
+                    if(userInfo['fatsPercent'] >= 0)
+                        fatsGramsGoal = parseInt(((userInfo['fatsPercent'] * BMR) / 900).toFixed());
+                    if(userInfo['proteinsPercent'] >= 0)
+                        proteinsGramsGoal = parseInt(((userInfo['proteinsPercent'] * BMR) / 400).toFixed());
+                } else {
+                    BMR = 0;
+                }
+
+                const today = new Date();
+                today.setUTCHours(0,0,0,0);
+
+                const todayUserMeals = await this.foodModel.findOne({ 
+                    userId: users[i]['id'],
+                    createdAt: { $gt: today } 
                 });
 
-                if(!program)
-                    return this.responseFactory.notFound({ _general: 'programs.program_not_found' }, response);
+                todayUserMeals['caloriesGoal'] = BMR;
+                todayUserMeals['carbosGoal'] = carbosGramsGoal;
+                todayUserMeals['fatsGoal'] = fatsGramsGoal;
+                todayUserMeals['proteinsGoal'] = proteinsGramsGoal;
 
-                let percentage = program['percentageType'] - 100;
-                BMR = parseInt((BMR + ((percentage * BMR) / 100 )).toFixed());
-            
-                if(userInfo['carbohydratesPercent'] >= 0)
-                    carbosGramsGoal = parseInt(((userInfo['carbohydratesPercent'] * BMR) / 400).toFixed());
-                if(userInfo['fatsPercent'] >= 0)
-                    fatsGramsGoal = parseInt(((userInfo['fatsPercent'] * BMR) / 900).toFixed());
-                if(userInfo['proteinsPercent'] >= 0)
-                    proteinsGramsGoal = parseInt(((userInfo['proteinsPercent'] * BMR) / 400).toFixed());
-            } else {
-                BMR = 0;
+                const update = await todayUserMeals.save(); 
+                if(!update)
+                    return this.responseFactory.error({ _general: 'foods.user_daily_meals_not_found' }, response);
             }
-
-            const today = new Date();
-            today.setUTCHours(0,0,0,0);
-
-            const todayUserMeals = await this.foodModel.findOne({ 
-                userId: users[i]['id'],
-                createdAt: { $gt: today } 
-            });
-
-            todayUserMeals['caloriesGoal'] = BMR;
-            todayUserMeals['carbosGoal'] = carbosGramsGoal;
-            todayUserMeals['fatsGoal'] = fatsGramsGoal;
-            todayUserMeals['proteinsGoal'] = proteinsGramsGoal;
-
-            const update = await todayUserMeals.save(); 
-            if(!update)
-                return this.responseFactory.error({ _general: 'foods.user_daily_meals_not_found' }, response);
         }
 
         return 'Done updating';
