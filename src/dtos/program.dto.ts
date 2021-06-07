@@ -18,10 +18,10 @@ export class ProgramDto {
 
   @ApiProperty({
     type: Number,
-    description: "The percentageType of the program",
+    description: "The calories adjustement of the program",
     default:''
   })
-  readonly percentageType: Number;
+  readonly caloriesAdjustment: Number;
 
   @ApiProperty({
     type: String,
@@ -50,5 +50,12 @@ export class ProgramDto {
     default:''
   })
   readonly proteinsPercent: number;
+
+  @ApiProperty({
+    type: Number,
+    description: "The proteins percentage",
+    default:''
+  })
+  readonly weeklyKgs: number;
 
 }

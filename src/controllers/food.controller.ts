@@ -122,8 +122,7 @@ export class FoodsController {
                     if(!program)
                         return this.responseFactory.notFound({ _general: 'programs.program_not_found' }, response);
 
-                    let percentage = program['percentageType'] - 100;
-                    BMR = parseInt((BMR + ((percentage * BMR) / 100 )).toFixed());
+                    BMR = BMR + program['caloriesAdjustment'];
                 
                     if(userInfo['carbohydratesPercent'] >= 0)
                         carbosGramsGoal = parseInt(((userInfo['carbohydratesPercent'] * BMR) / 400).toFixed());

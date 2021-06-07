@@ -5,11 +5,12 @@ export const ProgramSchema = new mongoose.Schema({
   updatedAt: { type: Date, required: true },
   name: { type: String, required: true },
   description: { type: String, required: false },
-  percentageType: { type: Number, required: true },
+  caloriesAdjustment: { type: Number, required: true },
   imageName: { type: String, required: true },
   carbosPercent: { type: Number, required: true },
   fatsPercent: { type: Number, required: true },
-  proteinsPercent: { type: Number, required: true }
+  proteinsPercent: { type: Number, required: true },
+  weeklyKgs: { type: Number, required: true }
 });
 
 export interface Program extends mongoose.Document {
@@ -18,9 +19,10 @@ export interface Program extends mongoose.Document {
   updatedAt: Date;
   name: string;
   description: string;
-  percentageType: number;
+  caloriesAdjustment: number;
   imageName: string;
   carbosPerent: number;
   fatsPercent: number;
   proteinsPercent: number;
+  weeklyKgs: number;
 }
