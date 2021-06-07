@@ -15,22 +15,24 @@ export class ProgramService {
     updatedAt: Date,
     name: String,
     description: String,
-    percentageType: Number,
+    caloriesAdjustment: Number,
     imageName: String,
     carbosPercent: number,
     fatsPercent: number,
-    proteinsPercent: number
+    proteinsPercent: number,
+    weeklyKgs: number
   ) {
         const newProgramAction = new this.programModel({
             createdAt,
             updatedAt,
             name,
             description,
-            percentageType,
+            caloriesAdjustment,
             imageName,
             carbosPercent,
             fatsPercent,
-            proteinsPercent
+            proteinsPercent,
+            weeklyKgs
         });
 
         return await newProgramAction.save();

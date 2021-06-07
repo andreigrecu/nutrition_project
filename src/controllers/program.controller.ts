@@ -29,11 +29,12 @@ export class ProgramsController {
             new Date(),
             programDto.name,
             programDto.description,
-            programDto.percentageType,
+            programDto.caloriesAdjustment,
             programDto.imageName,
             programDto.carbosPercent,
             programDto.fatsPercent,
-            programDto.proteinsPercent
+            programDto.proteinsPercent,
+            programDto.weeklyKgs
         )
 
         return program;
