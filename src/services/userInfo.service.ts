@@ -25,6 +25,7 @@ export class UserInfoService {
         userInfo.numberOfDaysGoal = createUserInfoDto.numberOfDaysGoal;
         userInfo.gender = createUserInfoDto.gender;
         userInfo.userId = createUserInfoDto.userId;
+        userInfo.activityType = createUserInfoDto.activityType;
 
         return await this.userInfoRepository.save(userInfo);
     }
@@ -68,6 +69,8 @@ export class UserInfoService {
             updateUserInfo.fatsPercent = updateUserInfoDto.fatsPercent;
         if(updateUserInfoDto.proteinsPercent)
             updateUserInfo.proteinsPercent = updateUserInfoDto.proteinsPercent;
+        if(updateUserInfoDto.activityType)
+            updateUserInfo.activityType = updateUserInfoDto.activityType;
 
         return this.userInfoRepository.update(id, updateUserInfo);
     }
