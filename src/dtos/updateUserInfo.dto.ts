@@ -72,4 +72,10 @@ export class UpdateUserInfoDto {
       description: 'User`s proteins percent',
     })
     proteinsPercent: number;
+
+    @ApiProperty({
+      type: String,
+      description: 'User`s activity type',
+    })
+    activityType: string;
 }

@@ -59,7 +59,7 @@ export class FoodsController {
     }
 
     //la o 00:00:01 o sa fie cronjob-ul
-    @Cron('20 39 10 * * *')
+    @Cron('45 41 14 * * *')
     async dailyCreate(
     ): Promise<any> {
         let userDailyPlan;
@@ -88,7 +88,7 @@ export class FoodsController {
     }
 
     //la 23:59:59 o sa fie
-    @Cron('48 37 17 * * *')
+    @Cron('46 41 14 * * *')
     async dailyGoals(
         @Res() response: Response
     ): Promise<any> {
@@ -105,10 +105,20 @@ export class FoodsController {
                 let sameBMR =  10 * userInfo['weight'] + 
                     6.25 * userInfo['height'] - 5 * userInfo['age'];
 
+                let activityTypeAdjustment;
+                if(userInfo['activityType'] && userInfo['activityType'] === 'sedentary')
+                    activityTypeAdjustment = 1.2;
+                if(userInfo['activityType'] && userInfo['activityType'] === 'lightlyActive')
+                    activityTypeAdjustment = 1.375;
+                if(userInfo['activityType'] && userInfo['activityType'] === 'veryActive')
+                    activityTypeAdjustment = 1.725;
+
                 if(userInfo['gender'] === 'male') {
                     BMR = sameBMR + 5;
+                    BMR = BMR * activityTypeAdjustment;
                 } else if(userInfo['gender'] === 'female') {
                     BMR = sameBMR - 161;
+                    BMR = BMR * activityTypeAdjustment;
                 }
 
                 let carbosGramsGoal = 0;
@@ -142,10 +152,12 @@ export class FoodsController {
                     createdAt: { $gt: today } 
                 });
 
-                todayUserMeals['caloriesGoal'] = BMR;
-                todayUserMeals['carbosGoal'] = carbosGramsGoal;
-                todayUserMeals['fatsGoal'] = fatsGramsGoal;
-                todayUserMeals['proteinsGoal'] = proteinsGramsGoal;
+                if(todayUserMeals) {
+                    todayUserMeals['caloriesGoal'] = BMR;
+                    todayUserMeals['carbosGoal'] = carbosGramsGoal;
+                    todayUserMeals['fatsGoal'] = fatsGramsGoal;
+                    todayUserMeals['proteinsGoal'] = proteinsGramsGoal;
+                }
 
                 const update = await todayUserMeals.save(); 
                 if(!update)

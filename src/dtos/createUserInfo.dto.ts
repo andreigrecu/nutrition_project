@@ -54,4 +54,12 @@ export class CreateUserInfoDto {
     @IsString()
     userId: string;
 
+    @ApiProperty({
+      type: String,
+      description: 'User`s activity type',
+      default: ''
+    })
+    @IsString()
+    activityType: string;
+
 }
