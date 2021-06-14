@@ -38,5 +38,8 @@ export class UserInfo extends CoreEntity {
     proteinsPercent: number;
 
     @Column()
-    activityType: String;
+    activityType: string;
+
+    @Column({default: 0})
+    daysWithoutUpdate: number;
 }

@@ -1,4 +1,4 @@
-import { Controller, Post, Body, Get, Res, Query, Put} from '@nestjs/common';
+import { Controller, Post, Body, Get, Res, Query, Put, Param} from '@nestjs/common';
 import { ApiTags } from "@nestjs/swagger";
 import { UserInfoService } from '../services/userInfo.service';
 import { ResponseFactory } from '../factories/ResponseFactory';
@@ -6,6 +6,7 @@ import { Response } from 'express';
 import { UserService } from '../services/user.service';
 import { CreateUserInfoDto } from '../dtos/createUserInfo.dto';
 import { UpdateUserInfoDto } from '../dtos/updateUserInfo.dto';
+import { Cron } from '@nestjs/schedule';
 
 @ApiTags('UsersInfo')
 @Controller('usersInfo')
@@ -71,5 +72,67 @@ export class UserInfoController {
             return this.responseFactory.notFound({ _general: 'usersInfo.usersInfos_not_found' }, response);
 
         return this.responseFactory.ok(usersInfo, response);
+    }
+
+    @Put(':id/delayOneDay')
+    async delayOneDay(
+        @Param('id') id: string,
+        @Res() response: Response
+    ): Promise<any> {
+        const user = await this.userService.findOne(id);
+        if(!user)
+            return this.responseFactory.notFound({ _general: 'users.user_not_found' }, response);
+
+        let userInfo = await this.userInfoService.findOne(id);
+        if(!userInfo)
+            return this.responseFactory.notFound({ _general: 'usersInfo.userInfo_not_found' }, response);  
+
+        userInfo = await this.userInfoService.delayOneDay(userInfo.id, userInfo.daysWithoutUpdate);
+        if(!userInfo)
+            return this.responseFactory.error({ _general: 'usersInfo.userInfo_not_updated' }, response);
+
+        return this.responseFactory.ok("done", response);
+    }
+
+    @Put(':id/stopAlertingUpdateNeeded')
+    async stopAlertingUpdateNeeded(
+        @Param('id') id: string,
+        @Res() response: Response
+    ): Promise<any> {
+        const user = await this.userService.findOne(id);
+        if(!user)
+            return this.responseFactory.notFound({ _general: 'users.user_not_found' }, response);
+
+        let userInfo = await this.userInfoService.findOne(id);
+        if(!userInfo)
+            return this.responseFactory.notFound({ _general: 'usersInfo.userInfo_not_found' }, response);  
+
+        userInfo = await this.userInfoService.stopAlertingUpdateNeeded(userInfo.id, userInfo.daysWithoutUpdate);
+        if(!userInfo)
+            return this.responseFactory.error({ _general: 'usersInfo.userInfo_not_updated' }, response);
+
+        return this.responseFactory.ok("done", response);
+    }
+
+    @Cron('01 00 08 * * *')
+    async countDaysWithoutUpdate(
+        @Res() response: Response
+    ): Promise<any> {
+      
+        const users = await this.userService.getAllUnfiltered();
+        if(!users)
+            return this.responseFactory.notFound({ _general: 'userInfo.users_not_found'}, response);
+
+        for(let i = 0; i < users.length; i++) {
+
+            let userInfo = await this.userInfoService.findOne(users[i].id);
+            if(!userInfo)
+                return this.responseFactory.notFound({ _general: 'usersInfo.userInfo_not_found' }, response);
+
+            userInfo = await this.userInfoService.updateDays(userInfo.id, userInfo.daysWithoutUpdate);
+            if(!userInfo)
+                return this.responseFactory.error({ _general: 'usersInfo.userInfo_not_updated' }, response);
+        }
+        return "done";
     }
 }
