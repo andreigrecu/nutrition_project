@@ -53,8 +53,10 @@ export class UserInfoService {
             updateUserInfo.age = updateUserInfoDto.age;
         if(updateUserInfoDto.height)
             updateUserInfo.height = updateUserInfoDto.height;
-        if(updateUserInfoDto.weight) 
+        if(updateUserInfoDto.weight) {
             updateUserInfo.weight = updateUserInfoDto.weight;
+            updateUserInfo.daysWithoutUpdate = 0;
+        }
         if(updateUserInfoDto.weightGoal)
             updateUserInfo.weightGoal = updateUserInfoDto.weightGoal;
         if(updateUserInfoDto.numberOfDaysGoal)
@@ -71,6 +73,36 @@ export class UserInfoService {
             updateUserInfo.proteinsPercent = updateUserInfoDto.proteinsPercent;
         if(updateUserInfoDto.activityType)
             updateUserInfo.activityType = updateUserInfoDto.activityType;
+
+        return this.userInfoRepository.update(id, updateUserInfo);
+    }
+
+    async updateDays(
+        id: string,
+        daysWithoutUpdate: number
+    ): Promise<any> {
+        let updateUserInfo: UserInfo = this.userInfoRepository.create();
+        updateUserInfo.daysWithoutUpdate = daysWithoutUpdate + 1;
+
+        return this.userInfoRepository.update(id, updateUserInfo);
+    }
+
+    async delayOneDay(
+        id: string,
+        daysWithoutUpdate: number
+    ): Promise<any> {
+        let updateUserInfo: UserInfo = this.userInfoRepository.create();
+        updateUserInfo.daysWithoutUpdate = daysWithoutUpdate - 1;
+
+        return this.userInfoRepository.update(id, updateUserInfo);
+    }
+
+    async stopAlertingUpdateNeeded(
+        id: string,
+        daysWithoutUpdate: number
+    ): Promise<any> {
+        let updateUserInfo: UserInfo = this.userInfoRepository.create();
+        updateUserInfo.daysWithoutUpdate = 0;
 
         return this.userInfoRepository.update(id, updateUserInfo);
     }
