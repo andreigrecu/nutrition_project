@@ -14,6 +14,7 @@ import { ScheduleModule } from '@nestjs/schedule';
 import { FoodModule } from './modules/food.module';
 import { ForgotPasswordModule } from './modules/forgotPassword.module';
 import { AuthModule } from './modules/auth.module';
+import { TrophiesModule } from './modules/trophies.module';
 
 @Module({
   imports: [
@@ -30,6 +31,7 @@ import { AuthModule } from './modules/auth.module';
         duration: 1000
       }
     }),
+    TrophiesModule,
     UserModule,
     UserInfoModule,
     CustomerModule,

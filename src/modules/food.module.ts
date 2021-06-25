@@ -11,12 +11,15 @@ import { UserInfo } from "../entities/userInfo";
 import { PasswordService } from "../services/password.service";
 import { UserInfoService } from "../services/userInfo.service";
 import { ProgramSchema } from "../models/program.model";
+import { TrophyService } from "../services/trophy.service";
+import { Trophy } from "../entities/trophy";
 
 @Module({
     imports:[
         TypeOrmModule.forFeature([
           User,
-          UserInfo
+          UserInfo,
+          Trophy
         ]),    
         MongooseModule.forFeature(
             [
@@ -31,7 +34,9 @@ import { ProgramSchema } from "../models/program.model";
         ResponseFactory,
         UserService,
         PasswordService,
-        UserInfoService
+        UserInfoService,
+        TrophyService
+
     ],
     controllers: [
       FoodsController
