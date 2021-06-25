@@ -1,6 +1,7 @@
 import { IsEmail, IsString } from 'class-validator';
-import { Entity, Column } from 'typeorm';
+import { Entity, Column, ManyToMany } from 'typeorm';
 import { CoreEntity } from './coreEntity';
+import { Trophy } from './trophy';
 
 @Entity()
 export class User extends CoreEntity {
@@ -44,4 +45,12 @@ export class User extends CoreEntity {
         default: null
     })
     valid_token: Date;
+
+    @Column({
+        default: false
+    })
+    newTrophy: Boolean;
+
+    @ManyToMany(type => Trophy, trophy => trophy.users)
+    trophies: Trophy[];
 }

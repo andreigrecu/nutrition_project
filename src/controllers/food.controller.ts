@@ -1,4 +1,4 @@
-import { Controller, Post, Body, Res, Put} from '@nestjs/common';
+import { Controller, Post, Body, Res, Put, Get} from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Food } from '../models/food.model';
@@ -11,6 +11,11 @@ import { Cron } from '@nestjs/schedule';
 import { UserService } from '../services/user.service';
 import { UserInfoService } from '../services/userInfo.service';
 import { Program } from '../models/program.model';
+import { InjectRepository } from '@nestjs/typeorm';
+import { UserInfo } from '../entities/userInfo';
+import { Repository } from 'typeorm';
+import { TrophyService } from '../services/trophy.service';
+import { User } from '../entities/user';
 
 @ApiTags('Foods')
 @Controller('foods')
@@ -24,7 +29,12 @@ export class FoodsController {
         private readonly foodService: FoodService,
         private readonly userService: UserService,
         private readonly responseFactory: ResponseFactory,
-        private readonly userInfoService: UserInfoService
+        private readonly userInfoService: UserInfoService,
+        @InjectRepository(UserInfo) 
+        private userInfoRepository: Repository<UserInfo>,
+        @InjectRepository(User) 
+        private userRepository: Repository<User>,
+        private readonly trophyService: TrophyService
     ) { }
 
     @Post()
@@ -58,12 +68,55 @@ export class FoodsController {
         return this.responseFactory.ok(food, response);
     }
 
+    async checkProgram(userMeals, userInfo) {
+
+        if(userMeals[1]['programId'] === userMeals[2]['programId']) {
+
+            const userInfoUpdate = await this.userInfoRepository.update(
+                userInfo['id'], {
+                    programRespected: userMeals[1]['programId'],
+                    numOfDaysRespected: userInfo['numOfDaysRespected'] + 1
+                }
+            );
+
+            if(!userInfoUpdate)
+                console.log("userInfo not updated in cronJob");
+        } else {
+            const userInfoUpdate = await this.userInfoRepository.update(
+                userInfo['id'], {
+                    programRespected: userMeals[1]['programId'],
+                    numOfDaysRespected: 1
+                }
+            );
+            if(!userInfoUpdate)
+                console.log("userInfo not updated in cronJob");
+        }
+    }
+
+    async updateWithZeroDays(userMeals, userInfo) {
+        
+        const userInfoUpdate = await this.userInfoRepository.update(
+            userInfo['id'], {
+                programRespected: userMeals[1]['programId'],
+                numOfDaysRespected: 0
+            }
+        );
+        if(!userInfoUpdate)
+            console.log("userInfo not updated in cronJob");
+    }
+
     //la o 00:00:01 o sa fie cronjob-ul
-    @Cron('30 20 11 * * *')
+    @Cron('42 09 14 * * *')
     async dailyCreate(
     ): Promise<any> {
+
         let userDailyPlan;
         const users = await this.userService.getAllUnfiltered();
+
+        const today = new Date();
+        today.setUTCHours(0,0,0,0);
+        const twoDaysAgo = new Date(today);
+        twoDaysAgo.setDate(twoDaysAgo.getDate() - 2);
 
         for(let i = 0; i < users.length; i++) {
             userDailyPlan = await this.foodService.create(
@@ -81,14 +134,128 @@ export class FoodsController {
                 0,
                 0
             )
-            .catch(error => console.log(error))
-        }
-        
+
+            //trophy logic 
+            const userMeals = await this.foodModel.find({
+                userId: users[i]['id'],
+                createdAt: { $gt: twoDaysAgo }
+            })
+                .sort({ createdAt: -1 })
+
+            if(!userMeals)
+                console.log("error at getting user meals in cronJob");
+
+            let nutrients = await this.userService.getADayNutrients(userMeals[1]);
+            let userInfo = await this.userInfoRepository.findOne({
+                where: {
+                    userId:  users[i]['id']
+                }
+            });
+            if(!userInfo)
+                console.log("userInfo not found in cronJob");
+
+            if(userMeals[1]['programId']) {
+                const program = await this.programModel.findOne({
+                    _id: userMeals[1]['programId']
+                });
+
+                let caloriesMargins = parseInt(((5 * userMeals[1]['caloriesGoal']) / 100).toFixed());
+                let carbosMargins = parseInt(((10 * userMeals[1]['carbosGoal']) / 100).toFixed());
+                let fatsMargins = parseInt(((10 * userMeals[1]['fatsGoal']) / 100).toFixed());
+                let proteinsMargins = parseInt(((10 * userMeals[1]['proteinsGoal']) / 100).toFixed());
+
+                if(program['caloriesAdjustment'] === 0) {
+                    if(
+                        parseInt(nutrients['calories']['totalCalories'].toFixed()) <= userMeals[1]['caloriesGoal'] + caloriesMargins &&
+                        parseInt(nutrients['calories']['totalCalories'].toFixed()) >= userMeals[1]['caloriesGoal'] - caloriesMargins &&
+                        parseInt(nutrients['carbohydrates']['totalCarbohydrates'].toFixed()) <= userMeals[1]['carbosGoal'] + carbosMargins &&
+                        parseInt(nutrients['carbohydrates']['totalCarbohydrates'].toFixed()) >= userMeals[1]['carbosGoal'] - carbosMargins &&
+                        parseInt(nutrients['fats']['totalFats'].toFixed()) <= userMeals[1]['fatsGoal'] + fatsMargins &&
+                        parseInt(nutrients['fats']['totalFats'].toFixed()) >= userMeals[1]['fatsGoal'] - fatsMargins &&
+                        parseInt(nutrients['proteins']['totalProteins'].toFixed()) <= userMeals[1]['proteinsGoal'] + proteinsMargins &&
+                        parseInt(nutrients['proteins']['totalProteins'].toFixed()) >= userMeals[1]['proteinsGoal'] - proteinsMargins
+                    ) {
+                        this.checkProgram(userMeals, userInfo);
+                    } else {
+                        this.updateWithZeroDays(userMeals, userInfo);
+                    }
+
+                } else if(program['caloriesAdjustment'] > 0) {
+                    if(
+                        parseInt(nutrients['calories']['totalCalories'].toFixed()) <= userMeals[1]['caloriesGoal'] + caloriesMargins &&
+                        parseInt(nutrients['calories']['totalCalories'].toFixed()) >= userMeals[1]['caloriesGoal'] &&
+                        parseInt(nutrients['carbohydrates']['totalCarbohydrates'].toFixed()) <= userMeals[1]['carbosGoal'] + carbosMargins &&
+                        parseInt(nutrients['carbohydrates']['totalCarbohydrates'].toFixed()) >= userMeals[1]['carbosGoal'] &&
+                        parseInt(nutrients['fats']['totalFats'].toFixed()) <= userMeals[1]['fatsGoal'] + fatsMargins &&
+                        parseInt(nutrients['fats']['totalFats'].toFixed()) >= userMeals[1]['fatsGoal'] &&
+                        parseInt(nutrients['proteins']['totalProteins'].toFixed()) <= userMeals[1]['proteinsGoal'] + proteinsMargins &&
+                        parseInt(nutrients['proteins']['totalProteins'].toFixed()) >= userMeals[1]['proteinsGoal']
+                    ) {
+                        this.checkProgram(userMeals, userInfo);
+                    } else {
+                        this.updateWithZeroDays(userMeals, userInfo);
+                    }
+                } else if(program['caloriesAdjustment'] < 0) {
+                    if(
+                        parseInt(nutrients['calories']['totalCalories'].toFixed()) <= userMeals[1]['caloriesGoal'] &&
+                        parseInt(nutrients['calories']['totalCalories'].toFixed()) >= userMeals[1]['caloriesGoal'] - caloriesMargins &&
+                        parseInt(nutrients['carbohydrates']['totalCarbohydrates'].toFixed()) <= userMeals[1]['carbosGoal'] &&
+                        parseInt(nutrients['carbohydrates']['totalCarbohydrates'].toFixed()) >= userMeals[1]['carbosGoal'] - carbosMargins &&
+                        parseInt(nutrients['fats']['totalFats'].toFixed()) <= userMeals[1]['fatsGoal'] &&
+                        parseInt(nutrients['fats']['totalFats'].toFixed()) >= userMeals[1]['fatsGoal'] - fatsMargins &&
+                        parseInt(nutrients['proteins']['totalProteins'].toFixed()) <= userMeals[1]['proteinsGoal'] &&
+                        parseInt(nutrients['proteins']['totalProteins'].toFixed()) >= userMeals[1]['proteinsGoal'] - proteinsMargins
+                    ) {
+                        this.checkProgram(userMeals, userInfo);
+                    } else {
+                        this.updateWithZeroDays(userMeals, userInfo);
+                    }
+                }
+            } else {
+                await this.userInfoRepository.update(
+                    userInfo['id'], {
+                        numOfDaysRespected: 0
+                    }
+                );
+            }
+
+            const trophies = await this.trophyService.findAll();
+            userInfo = await this.userInfoRepository.findOne({
+                where: {
+                    userId:  users[i]['id']
+                }
+            });
+            if(!userInfo)
+                console.log("userInfo not found in cronJob");
+
+            const userTrophies = await this.userService.findUserTrophies(users[i].id);
+            for(let k = 0; k < trophies.length; k++) {
+                if(trophies[k]['programId'] === userInfo['programRespected'] && trophies[k]['daysForAchieving'] === userInfo['numOfDaysRespected']) {
+
+                    let alreadyHasIt = false;
+                    for(let kk = 0; kk < userTrophies['trophies'].length; kk ++)
+                        if(userTrophies['trophies'][kk]['daysForAchieving'] === trophies[k]['daysForAchieving'] && userTrophies['trophies'][kk]['programId'] === trophies[k]['programId'])
+                            alreadyHasIt = true;
+
+                    if(alreadyHasIt === false) {
+                        let user = await this.userRepository.findOne(users[i].id, {
+                            relations: [
+                                'trophies'
+                            ]
+                        });
+                        user.trophies.push(trophies[k]);
+                        user.newTrophy = true;
+                        user = await this.userRepository.save(user);
+                    }
+                }
+            }
+
+        }  
         return 'Done creating users daily plans';
     }
 
     //la 23:59:59 o sa fie
-    @Cron('46 41 14 * * *')
+    @Cron('25 05 15 * * *')
     async dailyGoals(
         @Res() response: Response
     ): Promise<any> {
@@ -97,7 +264,7 @@ export class FoodsController {
         if(!users)
             return this.responseFactory.notFound({ _general: "food.users_not_found" }, response);
         
-        let BMR:number = 0;
+        let BMR: number = 0;
         for(let i = 0; i < users.length; i++) {
             const userInfo = await this.userInfoService.findOne(users[i].id);
 
@@ -157,6 +324,10 @@ export class FoodsController {
                     todayUserMeals['carbosGoal'] = carbosGramsGoal;
                     todayUserMeals['fatsGoal'] = fatsGramsGoal;
                     todayUserMeals['proteinsGoal'] = proteinsGramsGoal;
+
+                    if(BMR) {
+                        todayUserMeals['programId'] = userInfo['programId'];
+                    }
                 }
 
                 const update = await todayUserMeals.save(); 

@@ -42,4 +42,14 @@ export class UserInfo extends CoreEntity {
 
     @Column({default: 0})
     daysWithoutUpdate: number;
+
+    @Column({
+        default: 0
+    })
+    numOfDaysRespected: number;
+
+    @Column({
+        default: null
+    })
+    programRespected : string;
 }
