@@ -1,1 +1,1 @@
-# licenta_backend
+# Nutrition project
