@@ -17,7 +17,7 @@ services:
       - default
   phpmyadmin:
     image: phpmyadmin/phpmyadmin:5.0.1
-    container_name: processify_phpmyadmin
+    container_name: project2021_phpmyadmin
     restart: always
     environment:
       PMA_HOST: mysql
